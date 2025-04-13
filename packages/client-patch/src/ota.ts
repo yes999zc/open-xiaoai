@@ -64,10 +64,10 @@ async function getOTA(channel: "release" | "current" | "stable" = "release") {
     return;
   }
 
-  const sn = speaker.serialNumber;
   const model = speaker.hardware;
-  const version = speaker.romVersion;
   const time = new Date().getTime();
+  const sn = process.env.DEBUG_VERSION ? "" : speaker.serialNumber;
+  const version = process.env.DEBUG_VERSION ?? speaker.romVersion;
   const otaInfo = `channel=${channel}&filterID=${sn}&locale=zh_CN&model=${model}&time=${time}&version=${version}&8007236f-a2d6-4847-ac83-c49395ad6d65`;
   const base64Str = Buffer.from(otaInfo).toString("base64");
   const code = createHash("md5").update(base64Str).digest("hex");
@@ -91,6 +91,10 @@ async function main() {
   if (!ota.url) {
     console.log(`❌ 获取设备信息失败`);
     process.exit(1);
+  }
+  if (process.env.DEBUG_VERSION) {
+    console.log(JSON.stringify(ota, null, 4));
+    return;
   }
   console.log(`🔥 正在获取 OTA 信息...`);
   const res = await fetch(ota.url);
