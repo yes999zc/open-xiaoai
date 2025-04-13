@@ -1,0 +1,50 @@
+name: Xiaomi 智能音箱 Pro（OH2P）
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Xiaomi 智能音箱 Pro 固件更新
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🚗 初始化 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+      - name: 🔥 构建固件
+        id: build
+        env:
+          MI_USER: ${{ secrets.MI_USER }}
+          MI_PASSWORD: ${{ secrets.MI_PASS }}
+          MI_DEVICE: Xiaomi 智能音箱 Pro
+          SSH_PASSWORD: open-xiaoai
+        run: |
+          cd packages/client-patch
+          npm install
+          npm run build
+          MODEL=$(cat assets/.model)
+          VERSION=$(cat assets/.version)
+          TAG=${MODEL}_${VERSION}
+          FIRMWARE=$(basename $(ls \assets/*.bin 2>/dev/null | head -n 1) .bin)
+          cp assets/$FIRMWARE/root.squashfs assets/${TAG}.squashfs
+          cp assets/$FIRMWARE/root-patched.squashfs assets/${TAG}_patched.squashfs
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+      - name: ✅ 发布固件
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Xiaomi 智能音箱 Pro v${{ steps.build.outputs.version }}
+          tag: ${{ steps.build.outputs.tag }}
+          body: Xiaomi 智能音箱 Pro v${{ steps.build.outputs.version }} 固件更新
+          draft: true
+          prerelease: false
+          makeLatest: latest
+          removeArtifacts: true
+          artifacts: packages/client-patch/assets/*.squashfs
