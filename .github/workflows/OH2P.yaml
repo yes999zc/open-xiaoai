@@ -20,7 +20,7 @@ jobs:
         id: build
         env:
           MI_USER: ${{ secrets.MI_USER }}
-          MI_PASSWORD: ${{ secrets.MI_PASS }}
+          MI_PASS: ${{ secrets.MI_PASS }}
           MI_DEVICE: Xiaomi 智能音箱 Pro
           SSH_PASSWORD: open-xiaoai
         run: |
