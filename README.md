@@ -47,9 +47,28 @@
 
 以上皆为抛砖引玉，你也可以亲手编写自己想要的功能，一切由你定义！
 
+## 相关项目
+
 > [!TIP]
 > 技术的意义在于分享与共创。如果你打算或正在使用本项目做些有趣的事情，
 > 欢迎提交 PR 或 issue 分享你的项目和创意。✨
+
+如果你不想刷机，或者不是小爱音箱 Pro，下面的项目或许对你有用：
+
+- https://github.com/idootop/mi-gpt
+- https://github.com/idootop/migpt-next
+- https://github.com/yihong0618/xiaogpt
+- https://github.com/hanxi/xiaomusic
+
+## 参考链接
+
+如果你想要了解更多技术细节，下面的链接可能对你有用：
+
+- https://github.com/duhow/xiaoai-patch
+- https://github.com/jialeicui/open-lx01
+- https://javabin.cn/2021/xiaoai_fm.html
+- https://github.com/yihong0618/gitblog/issues/258
+- https://xuanxuanblingbling.github.io/iot/2022/09/16/mi/
 
 ## 免责声明
 
