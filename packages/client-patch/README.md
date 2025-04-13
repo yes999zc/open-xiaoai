@@ -12,7 +12,7 @@
 ## 准备条件
 
 > [!IMPORTANT]
-> 本教程仅适用于 **小爱音箱 Pro（LX06）** 和 **Xiaomi 智能音箱 Pro（OH2P）** 这两款机型，**其他型号**的小爱音箱可能存在兼容性问题，请勿直接使用！🚨
+> 本教程仅适用于 **小爱音箱 Pro（LX06）** 和 **Xiaomi 智能音箱 Pro（OH2P）** 这两款机型，**其他型号**的小爱音箱请勿直接使用！🚨
 
 
 - 小爱音箱 Pro（LX06、OH2P）
@@ -24,17 +24,35 @@
 
 ## 下载固件
 
+你可以直接在 [Github Releases](https://github.com/idootop/open-xiaoai/releases) 页面下载打包好的固件：
+- [Xiaomi 智能音箱 Pro v1.56.19](https://github.com/idootop/open-xiaoai/releases/tag/OH2P_1.56.19)
+- [小爱音箱 Pro v1.88.206](https://github.com/idootop/open-xiaoai/releases/tag/LX06_1.88.206)
+
+> [!TIP]
+> 里面有两个文件，下载 `patched` 那个：
+> - `xxx_patched.squashfs` 打补丁后的固件
+> - `xxx.squashfs` 原版固件（可用来刷回原系统）
+
 > [!NOTE]
-> 构建版本待发布，敬请期待。
+> 默认 SSH 登录密码为 `[REDACTED]`，如需修改请自行制作固件。
 
 
-你可以直接在 Github Release 页面下载打包好的补丁固件。
+> [!IMPORTANT]
+> 请下载和你当前小爱音箱版本一致的固件，跨版本刷机可能会出现未知错误，导致设备变砖。
+> 如果上面没有你的版本，请升级设备固件到最新版本，或者按照下面的教程自行制作固件。
 
-> 默认 SSH 登录密码为 `[REDACTED]`
+> [!CAUTION]
+> 当前支持的最新固件版本为：
+> - Xiaomi 智能音箱 Pro 👉 [v1.56.19](https://github.com/idootop/open-xiaoai/releases/tag/OH2P_1.56.19)
+> - 小爱音箱 Pro 👉 [v1.88.206](https://github.com/idootop/open-xiaoai/releases/tag/LX06_1.88.206)
+>
+> 更新版本的固件可能存在变化，导致刷机失败，设备变砖，请自行评估风险。
+
+
 
 ## 制作固件
 
-你也可以按照下面的 2 种方法，制作自定义固件。
+你可以按照下面的 2 种方法，制作自定义固件。
 
 ### 基础配置
 
