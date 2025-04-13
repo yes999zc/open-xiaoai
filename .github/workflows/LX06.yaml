@@ -15,21 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: 🚗 初始化 Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
       - name: 🔥 构建固件
         id: build
-        env:
-          OTA: ${{ inputs.ota }}
-          SSH_PASSWORD: open-xiaoai
         run: |
           cd packages/client-patch
-          npm install
-          npm run build
+          docker run -it --rm -e OTA=${{ inputs.ota }} -v $(pwd)/assets:/app/assets -v $(pwd)/patches:/app/patches idootop/open-xiaoai:latest
           MODEL=$(cat assets/.model)
           VERSION=$(cat assets/.version)
           TAG=${MODEL}_${VERSION}
