@@ -2,6 +2,8 @@
 
 让小爱音箱「听见你的声音」，解锁无限可能。
 
+![](./docs/images/cover.jpg)
+
 ## 简介
 
 2017 年，当全球首款千万级销量的智能音箱诞生时，我们以为触摸到了未来。但很快发现，这些设备被困在「指令-响应」的牢笼里：
@@ -26,11 +28,11 @@
 
 👉 [小爱音箱接入小智 AI 演示视频](https://www.bilibili.com/video/BV1NBXWYSEvX)
 
-[![](./docs/screenshots/xiaozhi.jpg)](https://www.bilibili.com/video/BV1NBXWYSEvX)
+[![](./docs/images/xiaozhi.jpg)](https://www.bilibili.com/video/BV1NBXWYSEvX)
 
 👉 [小爱音箱接入 MiGPT 演示视频](https://www.bilibili.com/video/BV1N1421y7qn)
 
-[![](./docs/screenshots/migpt.jpg)](https://www.bilibili.com/video/BV1N1421y7qn)
+[![](./docs/images/migpt.jpg)](https://www.bilibili.com/video/BV1N1421y7qn)
 
 ## 快速开始
 

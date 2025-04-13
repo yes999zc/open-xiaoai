@@ -9,7 +9,7 @@
   - 小爱音箱 Pro（LX06）
   - Xiaomi 智能音箱 Pro（OH2P）
 - Windows 电脑
-  - 用于连接小爱音箱刷机 
+  - 用于连接小爱音箱刷机
   - 需要用 **x86_64** 架构的，不支持 Windows **ARM**
 - 数据线
   - Type-C（适用于新款小爱音箱 Pro，**无需拆机**）
@@ -25,7 +25,7 @@
 
 旧款小爱音箱 Pro 需要先把音箱外壳拆下来（[参考步骤](https://www.52audio.com/archives/38303.html)），然后在主板左上角找到 Mico USB 的调试接口，使用 Mico USB 数据线连接到电脑。
 
-![](./screenshots/mico-usb.jpg)
+![](./images/mico-usb.jpg)
 
 ### 开始刷机
 
@@ -34,15 +34,15 @@
 
 首先，下载或自行制作[补丁固件](../packages/client-patch/README.md)，重命名为 `root_patched.squashfs`。
 
-然后，下载刷机工具：https://androidmtk.com/download-amlogic-flash-tool 
+然后，下载刷机工具：https://androidmtk.com/download-amlogic-flash-tool
 
 把下载好的刷机工具文件夹解压到桌面，重命名为 `Amlogic_Flash_Tool_v6.0.0`
 
-![](./screenshots/driver.jpg)
+![](./images/driver.jpg)
 
 然后运行 `AMLLogic driver installer.exe` 文件，按照提示安装 USB 驱动。
 
-![](./screenshots/bash.jpg)
+![](./images/bash.jpg)
 
 安装好驱动后，打开 `/bin` 目录，然后在空白处右键选择使用 [Git Bash](https://git-scm.com/downloads) 打开当前目录。
 
@@ -88,7 +88,8 @@ ssh -o HostKeyAlgorithms=+ssh-rsa root@你的小爱音箱局域网IP地址
 小爱音箱有 2 套系统，上面我们只是将 `system0` 刷成了打补丁后的系统。
 
 如果之后你想要更新系统，或者换回原来的系统，将启动分支设置成 `boot1` 重启即可。
-> 
+
+>
 
 ```shell
 # 连接到 SSH 后执行
