@@ -30,6 +30,25 @@ mksquashfs squashfs-root $FIRMWARE/root.squashfs \
     -comp $COMPRESSION -b $BLOCKSIZE \
     -noappend -all-root -always-use-fragments -no-xattrs -no-exports
 
+
+# 校验固件大小上限
+MODEL=$(cat $BASE_DIR/assets/.model)
+IMAGE_MAX_SIZE=0
+if [ "$MODEL" = "OH2P" ]; then
+    IMAGE_MAX_SIZE=$((0x02800000))
+elif [ "$MODEL" = "LX06" ]; then
+    IMAGE_MAX_SIZE=$((0x02800000))
+fi
+
+SIZE=`stat -L -c %s $FIRMWARE/root.squashfs`
+echo "📊 当前固件大小: $SIZE 字节"
+if [ "$SIZE" -ge "$IMAGE_MAX_SIZE" ]; then
+    echo "❌ 固件大小超过允许的最大值：$IMAGE_MAX_SIZE 字节"
+    exit 1
+fi
+
+echo "✅ 固件大小检查通过，剩余空间: $((IMAGE_MAX_SIZE - SIZE)) 字节"
+
 cp -rf $FIRMWARE $BASE_DIR/assets/$FIRMWARE
 
 echo "✅ 打包完成，固件文件已复制到 assets 目录..."

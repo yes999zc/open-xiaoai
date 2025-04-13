@@ -1,5 +1,6 @@
 FROM node:22-alpine
 
+ENV CI=true
 ENV TZ=Asia/Shanghai
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
