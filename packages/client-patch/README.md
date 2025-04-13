@@ -9,19 +9,6 @@
 - 禁用系统自动更新（系统更新后需要重新刷机打补丁）
 - 添加开机启动脚本 `/data/init.sh`（方便执行一些初始化脚本）
 
-## 准备条件
-
-> [!IMPORTANT]
-> 本教程仅适用于 **小爱音箱 Pro（LX06）** 和 **Xiaomi 智能音箱 Pro（OH2P）** 这两款机型，**其他型号**的小爱音箱请勿直接使用！🚨
-
-
-- 小爱音箱 Pro（LX06、OH2P）
-- Windows 电脑（需为 x86_64 架构，用于刷机）
-- 数据线（不能只是充电线，需要连接到电脑传输数据）
-  - Type-C（适用于新款小爱音箱 Pro，无需拆机）
-  - Micro USB（旧款小爱音箱 Pro 用这种，需要拆机）
-
-
 ## 下载固件
 
 你可以直接在 [Github Releases](https://github.com/idootop/open-xiaoai/releases) 页面下载打包好的固件：
@@ -79,7 +66,7 @@ SSH_PASSWORD=[REDACTED]
 - Docker：https://www.docker.com/get-started/
 
 > [!NOTE]
-> Windows 系统推荐使用 Git Bash 终端运行。
+> Windows 系统推荐使用 [Git Bash](https://git-scm.com/downloads) 终端运行。
 > 
 > CMD 和 PowerShell 终端需要调整下面命令中文件（夹）的实际路径。
 

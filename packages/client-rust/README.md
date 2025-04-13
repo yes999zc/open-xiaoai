@@ -13,7 +13,7 @@
 ## 编译运行
 
 > [!IMPORTANT]
-> 本项目仅作为挖掘小爱音箱潜力的一个演示，并未提供任何预构建产物，仅适合有动手能力的人自行编译运行。你可以按需修改源代码，增删自己想要的功能。
+> 本项目只是一个简单的演示程序，抛砖引玉，并未提供任何预构建产物，仅适合有动手能力的人自行编译运行。你可以按需修改源代码，增删自己想要的功能。
 
 首先，你需要在电脑上安装 `Rust` 开发环境 👉 [传送门](https://www.rust-lang.org/)
 
@@ -28,7 +28,7 @@ cross build --release --target armv7-unknown-linux-gnueabihf
 ```
 
 > [!NOTE]
-> 以下操作需要先将小爱音箱刷机， 然后 SSH 连接到小爱音箱。
+> 以下操作需要先将小爱音箱刷机， 然后 SSH 连接到小爱音箱。👉 [教程](../../docs/flash.md)
 
 编译成功后，将构建好的补丁程序 `client` 复制到小爱音箱上
 
@@ -63,17 +63,12 @@ curl -# -o /data/client https://你的client文件下载链接
 chmod +x /data/client
 
 # 运行
-/data/client ws://你的 server 端地址
+/data/client ws://你的 server 端地址（默认使用 4399 端口）
 
 # 比如：/data/client ws://192.168.31.227:4399
 ```
 
 ## 注意事项
-
-> [!TIP]
-> 旧版小爱音箱 Pro 的可用 RAM 和 ROM 均为 10MB 左右
->
-> 新版 Xiaomi 智能音箱 Pro 约为 100MB（升级为旧版的 10 倍！）
 
 当前 Client 端使用 Rust 编写，只负责转发和被动响应 Server 端的调用，不实现具体的业务逻辑。
 

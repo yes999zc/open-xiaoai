@@ -25,8 +25,6 @@ pnpm install
 pnpm dev
 ```
 
-## 注意事项
-
 首次运行你需要先配置自己的大模型服务，才能正常获取 AI 回复。
 
 > [!NOTE]
@@ -57,7 +55,12 @@ async function main() {
 main();
 ```
 
-默认 Rust Server 在启动时，并没有开启小爱音箱的录音能力。如果你需要在 Node.js 端正常接收音频输入流，或者播放音频输出流，请将 `src/server.rs` 文件中被注释掉的 `start_recording` 和 `start_play` 代码加回来，然后重新编译运行。
+## 注意事项
+
+1. 默认 Server 服务端口为 `4399`（比如 ws://192.168.31.227:4399），运行前请确保该端口未被其他程序占用。
+
+2. 默认 Rust Server 在启动时，并没有开启小爱音箱的录音能力。
+如果你需要在 Node.js 端正常接收音频输入流，或者播放音频输出流，请将 `src/server.rs` 文件中被注释掉的 `start_recording` 和 `start_play` 代码加回来，然后重新编译运行。
 
 > [!NOTE]
 > 本项目只是一个简单的演示程序，抛砖引玉。如果你需要更多的功能，比如唤醒词识别、语音转文字、连续对话等（甚至是对接 OpenAI 的 [Realtime API](https://platform.openai.com/docs/guides/realtime)），可参考本项目代码，自行实现想要的功能。
