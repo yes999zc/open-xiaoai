@@ -16,9 +16,6 @@
   - Micro USB（旧款小爱音箱 Pro 用这种，**需要拆机**）
   - 注意：不能只是充电线，需要能连接到电脑上传输数据
 
-> [!TIP]
-> 如果你用的是 Apple Silicon 的 macOS 电脑，也可以使用 [UTM](https://github.com/utmapp/UTM) 虚拟化运行 x86_64 的 Windows。不过这种方式运行速度极为缓慢（尤其是首次安装运行），建议还是找台 Windows 的主机来刷机。
-
 ### 连接电脑
 
 新款的 Xiaomi 智能音箱 Pro 可以直接使用 Type-C 数据线通过音响底部的 Type-C 接口连接到电脑。
