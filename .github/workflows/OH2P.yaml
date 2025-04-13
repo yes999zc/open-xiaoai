@@ -36,7 +36,7 @@ jobs:
           name: Xiaomi 智能音箱 Pro v${{ steps.build.outputs.version }}
           tag: ${{ steps.build.outputs.tag }}
           body: Xiaomi 智能音箱 Pro v${{ steps.build.outputs.version }} 固件更新
-          draft: true
+          draft: false
           prerelease: false
           makeLatest: latest
           removeArtifacts: true
