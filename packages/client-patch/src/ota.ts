@@ -82,8 +82,13 @@ async function getOTA(channel: "release" | "current" | "stable" = "release") {
 
 async function main() {
   console.log(`🔥 正在获取设备信息...`);
-  const ota = await getOTA();
-  if (!ota) {
+  let ota: any = {};
+  if (process.env.OTA) {
+    ota = JSON.parse(process.env.OTA);
+  } else {
+    ota = await getOTA();
+  }
+  if (!ota.url) {
     console.log(`❌ 获取设备信息失败`);
     process.exit(1);
   }

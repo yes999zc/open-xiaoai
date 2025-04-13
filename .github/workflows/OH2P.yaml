@@ -1,6 +1,11 @@
 name: Xiaomi 智能音箱 Pro（OH2P）
 on:
   workflow_dispatch:
+    inputs:
+      ota:
+        description: " 请输入 OTA 版本信息"
+        type: string
+        required: true
 
 jobs:
   build:
@@ -19,9 +24,7 @@ jobs:
       - name: 🔥 构建固件
         id: build
         env:
-          MI_USER: ${{ secrets.MI_USER }}
-          MI_PASS: ${{ secrets.MI_PASS }}
-          MI_DEVICE: Xiaomi 智能音箱 Pro
+          OTA: ${{ inputs.ota }}
           SSH_PASSWORD: open-xiaoai
         run: |
           cd packages/client-patch
