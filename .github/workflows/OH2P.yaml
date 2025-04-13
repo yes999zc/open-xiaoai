@@ -19,7 +19,7 @@ jobs:
         id: build
         run: |
           cd packages/client-patch
-          docker run -it --rm -e OTA=${{ inputs.ota }} -v $(pwd)/assets:/app/assets -v $(pwd)/patches:/app/patches idootop/open-xiaoai:latest
+          docker run --rm -e OTA=${{ inputs.ota }} -v $(pwd)/assets:/app/assets -v $(pwd)/patches:/app/patches idootop/open-xiaoai:latest
           MODEL=$(cat assets/.model)
           VERSION=$(cat assets/.version)
           TAG=${MODEL}_${VERSION}
