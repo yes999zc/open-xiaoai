@@ -26,7 +26,7 @@ COMPRESSION=$(echo "$SQUASHFS_INFO" | grep -o "xz\|gzip\|lzo\|lz4\|zstd compress
 BLOCKSIZE=$(echo "$SQUASHFS_INFO" | grep -o "blocksize: [0-9]* bytes" | cut -d' ' -f2)
 
 echo "🔥 使用原始参数重新打包固件..."
-mksquashfs squashfs-root $FIRMWARE/root.squashfs \
+mksquashfs squashfs-root $FIRMWARE/root-patched.squashfs \
     -comp $COMPRESSION -b $BLOCKSIZE \
     -noappend -all-root -always-use-fragments -no-xattrs -no-exports
 
@@ -40,7 +40,7 @@ elif [ "$MODEL" = "LX06" ]; then
     IMAGE_MAX_SIZE=$((0x02800000))
 fi
 
-SIZE=`stat -L -c %s $FIRMWARE/root.squashfs`
+SIZE=`stat -L -c %s $FIRMWARE/root-patched.squashfs`
 echo "📊 当前固件大小: $SIZE 字节"
 if [ "$SIZE" -ge "$IMAGE_MAX_SIZE" ]; then
     echo "❌ 固件大小超过允许的最大值：$IMAGE_MAX_SIZE 字节"
@@ -52,4 +52,4 @@ echo "✅ 固件大小检查通过，剩余空间: $((IMAGE_MAX_SIZE - SIZE)) �
 cp -rf $FIRMWARE $BASE_DIR/assets/$FIRMWARE
 
 echo "✅ 打包完成，固件文件已复制到 assets 目录..."
-echo $BASE_DIR/assets/$FIRMWARE/root.squashfs
+echo $BASE_DIR/assets/$FIRMWARE/root-patched.squashfs

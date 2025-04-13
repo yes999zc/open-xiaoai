@@ -61,7 +61,7 @@ SSH_PASSWORD=[REDACTED]
 docker run -it --rm --env-file $(pwd)/.env -v $(pwd)/assets:/app/assets -v $(pwd)/patches:/app/patches open-xiaoai
 
 # ✅ 打包完成，固件文件已复制到 assets 目录...
-# /app/assets/mico_all_92db90ed6_1.88.197/root.squashfs
+# /app/assets/mico_all_92db90ed6_1.88.197/root-patched.squashfs
 ```
 
 ### 2. 本地构建（macOS、Linux）
