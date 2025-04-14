@@ -1,0 +1,149 @@
+#!/bin/bash
+
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
+RESET='\033[m'
+
+UPDATE_BIN="macos/update"
+
+# 检查运行环境
+if [ "$(uname -o)" != "Darwin" ]; then
+   echo "❌ 该脚本只支持 macOS 运行"
+   exit 1
+fi
+
+# 检查 update 工具是否存在
+if [ ! -f "$UPDATE_BIN" ]; then
+   echo "❌ 找不到刷机工具: $UPDATE_BIN"
+   exit 1
+fi
+
+# 运行 update 命令
+run_update() {
+    local cmd="$UPDATE_BIN 2>/dev/null"
+    local need_spaces=0
+    
+    if [[ "$1" == "bulkcmd" ]]; then
+       need_spaces=1
+    fi
+    
+    cmd+=" $1"
+    shift 1
+    
+    for arg in "$@"; do
+        if [[ $need_spaces == 1 ]]; then
+           cmd+=" \"     $arg\""
+        else
+           cmd+=" $arg"
+        fi
+    done
+    
+    echo -e "${CYAN}执行: $cmd${RESET}"
+    local result=$(eval "$cmd")
+    echo -e "${YELLOW}$result${RESET}"
+    
+    if echo "$result" | grep -q "ERR"; then
+       echo -e "${RED}命令执行失败${RESET}"
+       return 1
+    fi
+    
+    return 0
+}
+
+# 显示帮助信息
+show_help() {
+    echo ""
+    echo "小爱音箱刷机工具 v1.0.0  by https://del.wang"
+    echo ""
+    echo "使用方法:"
+    echo "  ./flash connect                   # 连接设备"
+    echo "  ./flash delay <秒数>              # 设置启动延时，如 5 秒"
+    echo "  ./flash switch <boot分区>         # 设置启动分区，如 boot0"
+    echo "  ./flash system <分区> <固件路径>  # 把固件刷到指定分区，如 system0"
+}
+
+# 连接设备
+cmd_connect() {
+    echo "🔌 请先拔掉设备电源，然后重新插上电源"
+    echo "💡 如果长时间未连接，请拔插电源后重试..."
+    while true; do
+        run_update identify 7
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✅ 设备已连接${RESET}"
+            return 0
+        fi
+        echo "⏳ 等待设备连接..."
+        sleep 1
+    done
+}
+
+# 设置启动分区
+cmd_switch() {
+    if [ -z "$1" ]; then
+        echo "❌ 请指定启动分区名称,如: ./flash switch boot0"
+        return 1
+    fi
+    
+    echo "📋 设置启动分区为: $1"
+    run_update bulkcmd "setenv boot_part $1"
+    run_update bulkcmd "saveenv"
+    echo -e "${GREEN}✅ 设置成功${RESET}"
+}
+
+# 设置启动延时
+cmd_delay() {
+    if [ -z "$1" ]; then
+        echo "❌ 请指定启动延时(秒),如: ./flash delay 15"
+        return 1
+    fi
+    
+    echo "⏱️ 设置启动延时为: $1 秒"
+    run_update bulkcmd "setenv bootdelay $1"
+    run_update bulkcmd "saveenv"
+    echo -e "${GREEN}✅ 设置成功${RESET}"
+}
+
+# 刷入分区
+cmd_system() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "❌ 请指定分区名称和文件,如: ./flash system system0 root.squashfs"
+        return 1
+    fi
+    
+    if [ ! -f "$2" ]; then
+        echo "❌ 文件不存在: $2"
+        return 1
+    fi
+    
+    echo "💾 正在刷入 $2 到 $1 分区..."
+    run_update partition "$1" "$2"
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ 刷入成功${RESET}"
+    else
+        echo -e "${RED}❌ 刷入失败${RESET}"
+        return 1
+    fi
+}
+
+# 主命令处理
+case "$1" in
+    connect)
+        cmd_connect
+        ;;
+    switch)
+        cmd_switch "$2"
+        ;;
+    delay)
+        cmd_delay "$2"
+        ;;
+    system)
+        cmd_system "$2" "$3"
+        ;;
+    *)
+        show_help
+        ;;
+esac
