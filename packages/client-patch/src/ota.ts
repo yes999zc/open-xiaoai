@@ -106,7 +106,7 @@ async function main() {
       if (filePath) {
         fs.writeFileSync(
           path.join(process.cwd(), "assets", ".model"),
-          ota.model
+          ota.model.toUpperCase()
         );
         fs.writeFileSync(
           path.join(process.cwd(), "assets", ".version"),
