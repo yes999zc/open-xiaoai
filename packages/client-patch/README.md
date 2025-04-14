@@ -13,7 +13,7 @@
 
 你可以直接在 [Github Releases](https://github.com/idootop/open-xiaoai/releases) 页面下载打包好的固件：
 - [Xiaomi 智能音箱 Pro v1.56.19](https://github.com/idootop/open-xiaoai/releases/tag/OH2P_1.56.19)
-- 小爱音箱 Pro v1.88.206 (声卡补丁还有些问题，暂时请勿下载/制作)
+- [小爱音箱 Pro v1.88.206](https://github.com/idootop/open-xiaoai/releases/tag/LX06_1.88.206)
 
 > [!TIP]
 > 里面有两个文件，下载 `patched` 那个：
