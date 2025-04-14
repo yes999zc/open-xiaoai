@@ -6,7 +6,7 @@
  }
 +
  pcm.mico_record {
-     type plug
+-	  type plug
 -	  slave.pcm noop
 -    ttable {
 -        0.4 1
@@ -18,6 +18,7 @@
 -        6.6 1
 -        7.6 1
 -    }
++    type plug
 +    slave.pcm Capture
  }
  
@@ -30,7 +31,7 @@
 -	    rate 48000
 -	    channels 8
 -	    period_size 480
--	    buffer_size 3840
+-      buffer_size 3840
 -   }
 +    type plug
 +    slave.pcm Capture
