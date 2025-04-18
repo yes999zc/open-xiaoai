@@ -10,7 +10,7 @@ RESET='\033[m'
 UPDATE_BIN="macos/update"
 
 # 检查运行环境
-if [ "$(uname -o)" != "Darwin" ]; then
+if [ "$(uname -s)" != "Darwin" ]; then
    echo "❌ 该脚本只支持 macOS 运行"
    exit 1
 fi
