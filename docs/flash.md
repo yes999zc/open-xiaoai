@@ -71,6 +71,8 @@
 # ⚡️ 第 3 步：刷入 system0
 ./update.exe partition system0 root_patched.squashfs
 # 注意：需要把 root_patched.squashfs 替换成你下载的补丁固件实际路径
+
+# 提示刷机成功之后，拔掉数据线和电源，重新插电重启小爱音箱即可
 ```
 
 ### SSH 连接到小爱音箱

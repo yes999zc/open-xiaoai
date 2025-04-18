@@ -46,4 +46,5 @@ chmod +x ./flash
 # 第 4 步：刷写固件（注意替换固件文件的实际路径）
 ./flash system system0 root-patched.squashfs
 
+# 提示刷机成功之后，拔掉数据线和电源，重新插电重启小爱音箱即可
 ```
