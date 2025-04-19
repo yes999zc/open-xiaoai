@@ -71,7 +71,7 @@ class SpeakerManager implements ISpeaker {
       const res = await this.runShell(
         url
           ? `miplayer -f '${url}'`
-          : `/usr/sbin/tts_play2.sh '${text || "你好"}'`,
+          : `/usr/sbin/tts_play.sh '${text || "你好"}'`,
         { timeout }
       );
       return res?.exit_code === 0;

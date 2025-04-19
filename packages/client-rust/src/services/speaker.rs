@@ -80,7 +80,7 @@ impl SpeakerManager {
     /// TTS
     pub async fn play_text(text: &str) -> Result<bool, AppError> {
         const COMMAND: &str = r#"
-            /usr/sbin/tts_play2.sh '%s'
+            /usr/sbin/tts_play.sh '%s'
         "#;
         let script = COMMAND.replace("%s", text);
         let res = SpeakerManager::run_shell(&script).await?;
