@@ -9,11 +9,11 @@
     "dev": "pnpm build && pnpm start"
   },
   "dependencies": {
-    "@mi-gpt/engine": "1.1.1",
-    "@mi-gpt/utils": "1.0.0"
+    "@mi-gpt/engine": "1.2.1",
+    "@mi-gpt/utils": "1.1.1"
   },
   "devDependencies": {
-    "@mi-gpt/config": "1.0.0",
+    "@mi-gpt/config": "1.1.0",
     "@neon-rs/cli": "0.1.82",
     "@types/node": "^22.13.11",
     "cargo-cp-artifact": "^0.1.9",

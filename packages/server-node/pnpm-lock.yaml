@@ -9,15 +9,15 @@ importers:
   .:
     dependencies:
       '@mi-gpt/engine':
+        specifier: 1.2.1
+        version: 1.2.1
+      '@mi-gpt/utils':
         specifier: 1.1.1
         version: 1.1.1
-      '@mi-gpt/utils':
-        specifier: 1.0.0
-        version: 1.0.0
     devDependencies:
       '@mi-gpt/config':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       '@neon-rs/cli':
         specifier: 0.1.82
         version: 0.1.82
@@ -236,28 +236,28 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@mi-gpt/chat@1.0.0':
-    resolution: {integrity: sha512-PyyQ4Vg3s1OcUxr9GXZTpBgGCRQldhm9vGKc3UpAA4QDyVJWSP6ILhXKfFHO+UfnxDr45y9wlk5PpMcgkmPNkQ==}
+  '@mi-gpt/chat@1.1.1':
+    resolution: {integrity: sha512-C5b498nGC1ZAg6/Nl5XWneOwnUQ9CgK+0wCEqNDHYkj96YWqpbW3uGS6ubgNncpVMg/uXMoc55l1hsUF0lz+oQ==}
     engines: {node: '>=16'}
 
-  '@mi-gpt/config@1.0.0':
-    resolution: {integrity: sha512-oo/roYiRcGiHsZESjukwPTsRFqddShTJ8gkccR5ZMYn8SySj07A0nCsEsLEfB9mLkvNY8D6PCO1NxbRDDRBBlA==}
+  '@mi-gpt/config@1.1.0':
+    resolution: {integrity: sha512-o24iFINsoDuvInnMpfBQ4zCuTObbdodjXyizXmxl3yyYOMjmIAXizO/1UZ9/dv3UVTov3sjL09aCGuBeIVhvtA==}
     engines: {node: '>=16'}
 
-  '@mi-gpt/engine@1.1.1':
-    resolution: {integrity: sha512-TyA6JCq/yGvJI+ysFuDOwLaDUJ1fjjtxHIGB3Nyr40R0Ujb32Ssz/FoCDpbVmTKj2niebZQAGuUl7/juBuQwtw==}
+  '@mi-gpt/engine@1.2.1':
+    resolution: {integrity: sha512-EmBVS/l1xj8N54ZHRmYcV0jl9vh0QBPsyMdjwmS5h9+cdG40ItUq+shVg9ZHJrwoixKIiagYJ4lAjw+yUQ1DUQ==}
     engines: {node: '>=16'}
 
-  '@mi-gpt/openai@1.0.0':
-    resolution: {integrity: sha512-BZI2gJkcJ4TuHcyyD5fzvFzEMlSkfkkuxpycQ/mSiMC8Z3umQbRSk2z1Tg3ho8DFxf5tYiIsFzbvWCBw2WXlwg==}
+  '@mi-gpt/openai@1.1.1':
+    resolution: {integrity: sha512-pEs9y/GMY/ZDmlFfcBuowuvyE+j3cTKeQY0cMhZ9AobXD/qGNWlP7gQXojsSbVg/D0bB2snhEiWv/X5s1EzJWg==}
     engines: {node: '>=16'}
 
-  '@mi-gpt/stream@1.0.0':
-    resolution: {integrity: sha512-nzYKGODEhTbBUv6WGmgEY4rioXfWRvs2te99nQWjl+agmN9bT7KTbHKm8tzTDApQcQltx5BTDXrXMairmLVTYQ==}
+  '@mi-gpt/stream@1.1.1':
+    resolution: {integrity: sha512-4zd8brCqGX05tStweUWFdeE4EVpZGtFXHfvfYqvdJWccFK4PZkW3ynvJ0lc4N8SdsJo5Ml6XxOftRpZUnfGJtg==}
     engines: {node: '>=16'}
 
-  '@mi-gpt/utils@1.0.0':
-    resolution: {integrity: sha512-hAU/uYPNiNJgXWkQrVqRLe/9Uz8AgtoiNwcbbwQs8iXJcyq3NjcSHkkwUseJAnaQFE9iv/kvHZZsx3r2HhlKjw==}
+  '@mi-gpt/utils@1.1.1':
+    resolution: {integrity: sha512-FiGHV2RDBRGE/Xb9Q5H757t3ZqOpo6gL+44VXiRxQb3fQiapOpn038RAWErHJYZajYzkxP2jl8Wggsb+wp77Zg==}
     engines: {node: '>=16'}
 
   '@neon-rs/cli@0.1.82':
@@ -671,34 +671,34 @@ snapshots:
   '@esbuild/win32-x64@0.25.2':
     optional: true
 
-  '@mi-gpt/chat@1.0.0':
+  '@mi-gpt/chat@1.1.1':
     dependencies:
-      '@mi-gpt/openai': 1.0.0
-      '@mi-gpt/stream': 1.0.0
-      '@mi-gpt/utils': 1.0.0
+      '@mi-gpt/openai': 1.1.1
+      '@mi-gpt/stream': 1.1.1
+      '@mi-gpt/utils': 1.1.1
     transitivePeerDependencies:
       - encoding
       - supports-color
       - ws
       - zod
 
-  '@mi-gpt/config@1.0.0': {}
+  '@mi-gpt/config@1.1.0': {}
 
-  '@mi-gpt/engine@1.1.1':
+  '@mi-gpt/engine@1.2.1':
     dependencies:
-      '@mi-gpt/chat': 1.0.0
-      '@mi-gpt/openai': 1.0.0
-      '@mi-gpt/stream': 1.0.0
-      '@mi-gpt/utils': 1.0.0
+      '@mi-gpt/chat': 1.1.1
+      '@mi-gpt/openai': 1.1.1
+      '@mi-gpt/stream': 1.1.1
+      '@mi-gpt/utils': 1.1.1
     transitivePeerDependencies:
       - encoding
       - supports-color
       - ws
       - zod
 
-  '@mi-gpt/openai@1.0.0':
+  '@mi-gpt/openai@1.1.1':
     dependencies:
-      '@mi-gpt/utils': 1.0.0
+      '@mi-gpt/utils': 1.1.1
       openai: 4.93.0
       proxy-agent: 6.5.0
     transitivePeerDependencies:
@@ -707,11 +707,11 @@ snapshots:
       - ws
       - zod
 
-  '@mi-gpt/stream@1.0.0':
+  '@mi-gpt/stream@1.1.1':
     dependencies:
-      '@mi-gpt/utils': 1.0.0
+      '@mi-gpt/utils': 1.1.1
 
-  '@mi-gpt/utils@1.0.0': {}
+  '@mi-gpt/utils@1.1.1': {}
 
   '@neon-rs/cli@0.1.82':
     optionalDependencies:
