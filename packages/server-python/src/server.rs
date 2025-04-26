@@ -1,4 +1,5 @@
 use open_xiaoai::base::{AppError, VERSION};
+use open_xiaoai::services::audio::config::AudioConfig;
 use open_xiaoai::services::connect::data::{Event, Request, Response, Stream};
 use open_xiaoai::services::connect::handler::MessageHandler;
 use open_xiaoai::services::connect::message::{MessageManager, WsStream};
@@ -19,10 +20,34 @@ async fn test() -> Result<(), AppError> {
     SpeakerManager::play_text("已连接").await?;
 
     let _ = RPC::instance()
-        .call_remote("start_recording", None, None)
+        .call_remote(
+            "start_recording",
+            Some(json!(AudioConfig {
+                pcm: "noop".into(),
+                channels: 1,
+                bits_per_sample: 16,
+                sample_rate: 16000,
+                period_size: 1440 / 4,
+                buffer_size: 1440,
+            })),
+            None,
+        )
         .await;
 
-    let _ = RPC::instance().call_remote("start_play", None, None).await;
+    let _ = RPC::instance()
+        .call_remote(
+            "start_play",
+            Some(json!(AudioConfig {
+                pcm: "noop".into(),
+                channels: 1,
+                bits_per_sample: 16,
+                sample_rate: 24000,
+                period_size: 1440 / 4,
+                buffer_size: 1440,
+            })),
+            None,
+        )
+        .await;
 
     Ok(())
 }
