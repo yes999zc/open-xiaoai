@@ -3,7 +3,6 @@ from typing import Awaitable, Callable, Optional
 from google import genai
 from google.genai import types
 
-
 GEMINI_MODEL = "gemini-2.0-flash-live-001"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or "你的 API KEY"
 
@@ -17,10 +16,13 @@ class Gemini:
 
     config = types.LiveConnectConfig(
         response_modalities=[types.Modality.AUDIO],
+        system_instruction=types.Content(
+            parts=[types.Part(text="你是小爱音箱，请用中文回答用户的问题。")]
+        ),
         speech_config=types.SpeechConfig(
             language_code="cmn-CN",
             voice_config=types.VoiceConfig(
-                prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name="Kore")
+                prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name="Leda")
             ),
         ),
         context_window_compression=(
