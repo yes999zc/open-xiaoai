@@ -3,7 +3,7 @@
 小爱音箱接入[Gemini Live API](https://ai.google.dev/gemini-api/docs/live) 的演示程序，支持自动 VAD + 连续对话。
 
 > [!IMPORTANT]
-> 你需要先到 [Google AI Studio](https://aistudio.google.com) 注册账号并[创建 API 密钥](https://aistudio.google.com/apikey)。
+> 你需要先到 [Google AI Studio](https://aistudio.google.com) 注册账号并[创建 API 密钥](https://aistudio.google.com/apikey)。然后更新 `GEMINI_API_KEY` 环境变量，或 `gemini/gemini.py` 文件中的密钥。
 
 ## 环境准备
 
@@ -27,7 +27,7 @@ uv run main.py
 
 ## 注意事项
 
-运行程序前，请先更新 `GEMINI_API_KEY` 环境变量，或 `gemini/gemini.py` 文件中的密钥。
+该演示暂不支持中断 AI 的回复，需要等待 AI 回答完毕后才能重新响应用户的语音输入。
 
 > [!NOTE]
 > 本项目只是一个简单的演示程序，抛砖引玉。如果你需要更多的功能，比如唤醒词识别、语音转文字、连续对话等，可以参考开源的 [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) 项目，借助 Python 丰富的 AI 生态，自行实现想要的功能。
