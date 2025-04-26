@@ -1,4 +1,4 @@
-# Python Server
+# Open-XiaoAI x 小智 AI
 
 [Open-XiaoAI](https://github.com/idootop/open-xiaoai) 的 Python 版 Server 端，用来演示小爱音箱接入[小智 AI](https://github.com/78/xiaozhi-esp32)。
 
@@ -17,7 +17,7 @@
 ## 编译运行
 
 > [!NOTE]
-> 请先确认你已经将小爱音箱刷机成功，并安装运行了 Rust 补丁程序 [👉 教程](../client-rust/README.md)，否则该 Python Server 端启动后收不到音频输入，将无法正常工作。
+> 请先确认你已经将小爱音箱刷机成功，并安装运行了 Rust 补丁程序 [👉 教程](../../packages/client-rust/README.md)，否则该 Python Server 端启动后收不到音频输入，将无法正常工作。
 
 ```bash
 # 安装 Python 依赖
@@ -42,4 +42,4 @@ uv run main.py --mode xiaozhi
 请按照提示注册你的小智 AI 账号，然后创建 Agent 绑定设备即可开始体验。
 
 > [!NOTE]
-> 本项目只是一个简单的演示程序，抛砖引玉。如果你需要更多的功能，比如唤醒词识别、语音转文字、连续对话等，可以参考开源的 [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server)  项目，借助 Python 丰富的 AI 生态，自行实现想要的功能。
+> 本项目只是一个简单的演示程序，抛砖引玉。如果你想要更多的功能，比如唤醒词识别、语音转文字、连续对话等，可以参考开源的 [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) 项目，借助 Python 丰富的 AI 生态自行实现。

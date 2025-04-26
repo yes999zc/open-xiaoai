@@ -44,8 +44,9 @@
 1. 刷机更新小爱音箱补丁固件，开启并 SSH 连接到小爱音箱 👉 [教程](docs/flash.md)
 2. 在你的电脑上编译好 Client 端补丁程序，然后复制到小爱音箱上运行 👉 [教程](packages/client-rust/README.md)
 3. 在你的电脑上运行 Server 端演示程序，体验小爱音箱的全新能力 ✨
-   - Python Server 演示 👉 [小爱音箱接入小智 AI](packages/server-python/README.md)
-   - Node.js Server 演示 👉 [小爱音箱接入 MiGPT-Next](packages/server-node/README.md)
+   - 👉 [小爱音箱接入小智 AI](examples/xiaozhi/README.md)
+   - 👉 [小爱音箱接入 MiGPT-Next](examples/migpt/README.md)
+   - 👉 [小爱音箱接入 Gemini Live API](examples/gemini/README.md)
 
 以上皆为抛砖引玉，你也可以亲手编写自己想要的功能，一切由你定义！
 
@@ -66,18 +67,18 @@
 
 如果你想要了解更多技术细节，下面的链接可能对你有用：
 
-- https://github.com/duhow/xiaoai-patch
-- https://github.com/jialeicui/open-lx01
-- https://javabin.cn/2021/xiaoai_fm.html
 - https://github.com/yihong0618/gitblog/issues/258
+- https://github.com/jialeicui/open-lx01
+- https://github.com/duhow/xiaoai-patch
+- https://javabin.cn/2021/xiaoai_fm.html
 - https://xuanxuanblingbling.github.io/iot/2022/09/16/mi/
 
 ## 免责声明
 
 1. **适用范围**
-   本项目为非盈利开源项目，仅限于技术原理研究、安全漏洞验证及非营利性个人使用。严禁用于商业服务、网络攻击、数据窃取、系统破坏等违反《网络安全法》及使用者所在地司法管辖区的法律规定的场景。
+   本项目为开源非营利项目，仅供学术研究或个人测试用途。严禁用于商业服务、网络攻击、数据窃取、系统破坏等违反《网络安全法》及使用者所在地司法管辖区的法律规定的场景。
 2. **非官方声明**
-   本项目由第三方开发者独立开发，与小米集团及其关联方（下称"权利方"）无任何隶属/合作关系，未获其官方授权/认可或技术支持。项目中涉及的商标、固件、云服务的所有权利归属小米集团。若权利方主张权益，使用者应立即主动停止使用并删除本项目。
+   本项目由第三方开发者独立开发，与小米集团及其关联方（下称"权利方"）无任何隶属/合作关系，亦未获其官方授权/认可或技术支持。项目中涉及的商标、固件、云服务的所有权利归属小米集团。若权利方主张权益，使用者应立即主动停止使用并删除本项目。
 
 继续下载或运行本项目，即表示您已完整阅读并同意[用户协议](agreement.md)，否则请立即终止使用并彻底删除本项目。
 

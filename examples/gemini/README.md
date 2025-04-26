@@ -30,4 +30,4 @@ uv run main.py
 该演示暂不支持中断 AI 的回复，需要等待 AI 回答完毕后才能重新响应用户的语音输入。
 
 > [!NOTE]
-> 本项目只是一个简单的演示程序，抛砖引玉。如果你需要更多的功能，比如唤醒词识别、语音转文字、连续对话等，可以参考开源的 [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) 项目，借助 Python 丰富的 AI 生态，自行实现想要的功能。
+> 本项目只是一个简单的演示程序，抛砖引玉。如果你想要更多的功能，可以借助 Python 丰富的 AI 生态自行实现。

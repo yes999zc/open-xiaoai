@@ -1,6 +1,7 @@
 {
-  "name": "open-xiaoai-node",
+  "name": "open-xiaoai-migpt",
   "version": "1.0.0",
+  "description": "小爱音箱接入 MiGPT-Next",
   "private": true,
   "type": "module",
   "scripts": {

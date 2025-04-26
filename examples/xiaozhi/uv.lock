@@ -191,7 +191,7 @@ wheels = [
 ]
 
 [[package]]
-name = "open-xiaoai-python"
+name = "open-xiaoai-xiaozhi"
 version = "1.0.0"
 source = { editable = "." }
 dependencies = [
