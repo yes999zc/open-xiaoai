@@ -4,6 +4,6 @@
  # Put your custom commands here that should be executed once
  # the system init finished. By default this file does nothing.
  
-+[ -f "/data/init.sh" ] && /data/init.sh &
++[ -f "/data/init.sh" ] && sh /data/init.sh &
 +
  exit 0
