@@ -19,6 +19,9 @@
 
 为了构建能够在小爱音箱上运行的 ARMv7 应用，你还需要安装 `cross` 👉 [传送门](https://github.com/cross-rs/cross)
 
+> [!TIP]
+> 如果你是 Apple silicon 芯片，为了能够正常使用 cross 交叉编译镜像，请先在 Docker Desktop - Settings - General - Virtual Machine Options 中打开 Apple Virtual framework 选项，然后开启 `Use Rosetta for x86_64/amd64 emulation on Apple Silicon`
+
 ```shell
 # 安装依赖
 cargo fetch
@@ -26,6 +29,8 @@ cargo fetch
 # 交叉编译
 cross build --release --target armv7-unknown-linux-gnueabihf
 ```
+
+编译成功后，将构建好的补丁程序 `client` 复制到小爱音箱上
 
 > [!NOTE]
 > 以下操作需要先将小爱音箱刷机， 然后 SSH 连接到小爱音箱。👉 [教程](../../docs/flash.md)
