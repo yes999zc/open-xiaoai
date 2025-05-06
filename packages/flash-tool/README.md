@@ -48,6 +48,9 @@ chmod +x ./flash
 ./flash system system0 root-patched.squashfs
 ```
 
+> [!TIP]
+> 如果你卡在第一步，连接不上设备，可以按照[此教程](https://github.com/idootop/open-xiaoai/issues/6#issuecomment-2815632879)排查问题。
+
 > [!NOTE]
 > 提示刷机成功之后，拔掉数据线和电源，重新插电重启小爱音箱即可。
 > 如果重启之后小爱音箱没有反应，可以拔掉电源等几分钟再重新上电开机。
