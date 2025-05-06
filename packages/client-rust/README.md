@@ -30,8 +30,6 @@ cargo fetch
 cross build --release --target armv7-unknown-linux-gnueabihf
 ```
 
-编译成功后，将构建好的补丁程序 `client` 复制到小爱音箱上
-
 > [!NOTE]
 > 以下操作需要先将小爱音箱刷机， 然后 SSH 连接到小爱音箱。👉 [教程](../../docs/flash.md)
 
@@ -46,10 +44,13 @@ cross build --release --target armv7-unknown-linux-gnueabihf
 
 ```shell
 dd if=target/armv7-unknown-linux-gnueabihf/release/client \
-| ssh -o HostKeyAlgorithms=+ssh-rsa root@你的小爱音箱IP地址 "dd of=/data/client"
+| ssh -o HostKeyAlgorithms=+ssh-rsa root@你的小爱音箱IP地址 "dd of=/data/open-xiaoai/client"
 ```
 
-> 注意：替换你自己的小爱音箱局域网 IP 地址，比如： root@192.168.31.227
+> [!TIP]
+> 注意替换你自己的小爱音箱局域网 IP 地址，比如： root@192.168.31.227
+>
+> 如果提示 No such file or directory 请先在小爱音箱上创建 `/data/open-xiaoai` 文件夹
 
 你也可以先把 `client` 文件上传到一个地方，然后 SSH 连接到小爱音箱后，再用 `curl` 命令下载到本地。
 
@@ -57,20 +58,23 @@ dd if=target/armv7-unknown-linux-gnueabihf/release/client \
 # 连接到小爱音箱
 ssh -o HostKeyAlgorithms=+ssh-rsa root@你的小爱音箱IP地址
 
-# 下载文件到 /data/client
-curl -# -o /data/client https://你的client文件下载链接
+# 创建 open-xiaoai 文件夹
+mkdir /data/open-xiaoai
+
+# 下载文件
+curl -# -o /data/open-xiaoai/client https://你的client文件下载链接
 ```
 
 最后，在小爱音箱上授予 `client` 文件运行权限，然后运行：
 
 ```shell
 # 授权
-chmod +x /data/client
+chmod +x /data/open-xiaoai/client
 
 # 运行
-/data/client ws://你的 server 端地址（默认使用 4399 端口）
+/data/open-xiaoai/client ws://你的 server 端地址（默认使用 4399 端口）
 
-# 比如：/data/client ws://192.168.31.227:4399
+# 比如：/data/open-xiaoai/client ws://192.168.31.227:4399
 ```
 
 ## 注意事项
