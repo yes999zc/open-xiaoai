@@ -11,7 +11,7 @@
 - 数据线
   - Type-C（适用于新款小爱音箱 Pro，**无需拆机**）
   - Micro USB（旧款小爱音箱 Pro 用这种，**需要拆机**）
-  
+
 > [!NOTE]
 > 注意：数据线不能只是充电线，需要连接到电脑上能传输数据才行。
 
@@ -89,6 +89,13 @@
 ssh -o HostKeyAlgorithms=+ssh-rsa root@你的小爱音箱局域网IP地址
 # 比如：ssh -o HostKeyAlgorithms=+ssh-rsa root@192.168.31.227
 ```
+
+> [!TIP]
+> 如果刷机之后 SSH 连接不上去小爱音箱，请检查：
+> - 你设置的启动分区（boot0）是否和你刷写的系统分区（system0）一致（修改启动分区之后，需要 `saveenv` 才会保存生效）
+> - 你的电脑和小爱音箱是否处在同一网络环境下（可以更换路由器试试看）
+> - 你的内网防火墙是否屏蔽了 22 端口（SSH 默认连接端口）
+> - 如果你是自己构建的补丁固件，请检查 SSH 相关的 [patch](../packages/client-patch/patches/01-ssh.patch) 是否生效
 
 ### 更新系统
 
