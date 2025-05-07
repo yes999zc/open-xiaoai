@@ -57,6 +57,9 @@ class OpenXiaoAIEngine extends MiGPTEngine {
           timestamp: Date.now(),
         });
       }
+    } else if (e.event === "kws") {
+      const keyword = e.data;
+      console.log("🔥 唤醒词识别", keyword);
     }
   };
 

@@ -26,13 +26,13 @@ if [ $(check_disk_space "$BASE_DIR") -eq 1 ]; then
 fi
 
 
-WORK_DIR="$BASE_DIR/open-xiaoai"
+WORK_DIR="$BASE_DIR/open-xiaoai/kws"
 
 if [ ! -d "$WORK_DIR" ]; then
     mkdir -p "$WORK_DIR"
 fi
 
-if [ ! -f "$WORK_DIR/kws/kws" ]; then
+if [ ! -f "$WORK_DIR/kws" ]; then
     echo "🔥 正在下载模型文件..."
     curl -L -# -o "$WORK_DIR/kws.tar.gz" https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws/kws.tar.gz
     tar -xzvf "$WORK_DIR/kws.tar.gz" -C "$WORK_DIR"
@@ -42,12 +42,14 @@ fi
 
 echo "🔥 正在启动唤醒词识别服务..."
 
-"$WORK_DIR/kws/kws" \
+chmod +x "$WORK_DIR/kws"
+
+"$WORK_DIR/kws" \
     --model-type=zipformer2 \
-    --tokens="$WORK_DIR/kws/models/tokens.txt" \
-    --encoder="$WORK_DIR/kws/models/encoder.onnx" \
-    --decoder="$WORK_DIR/kws/models/decoder.onnx" \
-    --joiner="$WORK_DIR/kws/models/joiner.onnx" \
+    --tokens="$WORK_DIR/models/tokens.txt" \
+    --encoder="$WORK_DIR/models/encoder.onnx" \
+    --decoder="$WORK_DIR/models/decoder.onnx" \
+    --joiner="$WORK_DIR/models/joiner.onnx" \
     --keywords-file="/data/open-xiaoai/kws/keywords.txt" \
     --provider=cpu \
     --num-threads=1 \

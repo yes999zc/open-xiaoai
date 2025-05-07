@@ -1,5 +1,5 @@
 use std::future::Future;
-use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
@@ -18,7 +18,7 @@ pub struct KwsMonitor;
 
 static KWS_FILE_PATH: &str = "/tmp/open-xiaoai/kws.log";
 
-static LAST_TIMESTAMP: AtomicI32 = AtomicI32::new(0);
+static LAST_TIMESTAMP: AtomicU64 = AtomicU64::new(0);
 
 impl KwsMonitor {
     pub async fn start<F, Fut>(on_update: F)
@@ -32,8 +32,8 @@ impl KwsMonitor {
                 let on_update = Arc::clone(&on_update);
                 async move {
                     if let FileMonitorEvent::NewLine(content) = event {
-                        let data = content.split(' ').collect::<Vec<&str>>();
-                        let timestamp = data[0].parse::<i32>().unwrap();
+                        let data = content.split('@').collect::<Vec<&str>>();
+                        let timestamp = data[0].parse::<u64>().unwrap();
                         let keyword = data[1].to_string();
                         let last_timestamp = LAST_TIMESTAMP.load(Ordering::Relaxed);
                         if timestamp != last_timestamp {
@@ -53,6 +53,7 @@ impl KwsMonitor {
     }
 
     pub async fn stop() {
+        LAST_TIMESTAMP.store(0, Ordering::Relaxed);
         FileMonitor::instance().stop(KWS_FILE_PATH).await;
     }
 }
