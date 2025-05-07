@@ -10,7 +10,7 @@
 
 ## 刷机
 
-首先按照 [open-xiaoai](https://github.com/idootop/open-xiaoai) 里的教程将小爱音箱刷机， 然后 SSH 连接到小爱音箱。
+首先按照 [open-xiaoai](https://github.com/idootop/open-xiaoai) 里的教程将小爱音箱刷机，然后 SSH 连接到小爱音箱。
 
 ## 安装脚本
 

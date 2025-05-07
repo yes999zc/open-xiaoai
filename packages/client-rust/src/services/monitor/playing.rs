@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use std::future::Future;
-use std::sync::LazyLock;
 use tokio::time::{sleep, Duration};
 
 use crate::base::AppError;
@@ -16,18 +15,8 @@ pub enum PlayingMonitorEvent {
 
 pub struct PlayingMonitor;
 
-static INSTANCE: LazyLock<PlayingMonitor> = LazyLock::new(PlayingMonitor::new);
-
 impl PlayingMonitor {
-    fn new() -> Self {
-        Self {}
-    }
-
-    pub fn instance() -> &'static Self {
-        &INSTANCE
-    }
-
-    pub async fn start<F, Fut>(&self, on_update: F)
+    pub async fn start<F, Fut>(on_update: F)
     where
         F: Fn(PlayingMonitorEvent) -> Fut + Send + Sync + 'static,
         Fut: Future<Output = Result<(), AppError>> + Send + 'static,
@@ -39,7 +28,7 @@ impl PlayingMonitor {
         TaskManager::instance().add("PlayingMonitor", monitor).await;
     }
 
-    pub async fn stop(&self) {
+    pub async fn stop() {
         TaskManager::instance().dispose("PlayingMonitor").await;
     }
 
@@ -64,7 +53,7 @@ impl PlayingMonitor {
                 let _ = on_update(status).await;
             }
 
-            sleep(Duration::from_millis(100)).await;
+            sleep(Duration::from_millis(10)).await;
         }
     }
 }

@@ -56,7 +56,7 @@ impl FileMonitor {
         Fut: Future<Output = Result<(), AppError>> + Send + 'static,
     {
         while !Path::new(file_path).exists() {
-            sleep(Duration::from_millis(100)).await;
+            sleep(Duration::from_millis(10)).await;
         }
 
         let file = OpenOptions::new().read(true).open(file_path).await?;
@@ -79,7 +79,6 @@ impl FileMonitor {
             }
 
             let mut line = String::new();
-            let mut new_content_found = false;
 
             while let Ok(bytes_read) = reader.read_line(&mut line).await {
                 if bytes_read == 0 {
@@ -88,7 +87,6 @@ impl FileMonitor {
 
                 let trimmed_line = line.trim();
                 if !trimmed_line.is_empty() {
-                    new_content_found = true;
                     let _ = on_update(FileMonitorEvent::NewLine(trimmed_line.to_string())).await;
                 }
 
@@ -96,11 +94,7 @@ impl FileMonitor {
                 line.clear();
             }
 
-            if !new_content_found {
-                sleep(Duration::from_millis(100)).await;
-            } else {
-                sleep(Duration::from_millis(10)).await;
-            }
+            sleep(Duration::from_millis(10)).await;
         }
     }
 }

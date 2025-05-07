@@ -1,4 +1,5 @@
 use open_xiaoai::services::audio::config::AudioConfig;
+use open_xiaoai::services::monitor::kws::KwsMonitor;
 use serde_json::json;
 use std::time::Duration;
 use tokio::time::sleep;
@@ -65,13 +66,19 @@ impl AppClient {
         })
         .await;
 
-        PlayingMonitor::instance()
-            .start(|event| async move {
-                MessageManager::instance()
-                    .send_event("playing", Some(json!(event)))
-                    .await
-            })
-            .await;
+        PlayingMonitor::start(|event| async move {
+            MessageManager::instance()
+                .send_event("playing", Some(json!(event)))
+                .await
+        })
+        .await;
+
+        KwsMonitor::start(|event| async move {
+            MessageManager::instance()
+                .send_event("kws", Some(json!(event)))
+                .await
+        })
+        .await;
     }
 
     async fn dispose() {
@@ -79,7 +86,8 @@ impl AppClient {
         let _ = AudioPlayer::instance().stop().await;
         let _ = AudioRecorder::instance().stop_recording().await;
         InstructionMonitor::stop().await;
-        PlayingMonitor::instance().stop().await;
+        PlayingMonitor::stop().await;
+        KwsMonitor::stop().await;
     }
 }
 
