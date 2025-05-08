@@ -44,15 +44,15 @@ fi
 
 
 CONFIG_DIR="/data/open-xiaoai/kws"
-KWS_MONITOR_BIN="$CONFIG_DIR/kws-monitor"
+MONITOR_BIN="$CONFIG_DIR/monitor"
 
 if [ ! -d "$CONFIG_DIR" ]; then
     mkdir -p "$CONFIG_DIR"
 fi
 
-if [ ! -f "$KWS_MONITOR_BIN" ]; then
-    curl -L -# -o "$KWS_MONITOR_BIN" "$DOWNLOAD_BASE_URL/kws-monitor"
-    chmod +x "$KWS_MONITOR_BIN"
+if [ ! -f "$MONITOR_BIN" ]; then
+    curl -L -# -o "$MONITOR_BIN" "$DOWNLOAD_BASE_URL/monitor"
+    chmod +x "$MONITOR_BIN"
 fi
 
 if [ ! -f "$CONFIG_DIR/keywords.txt" ]; then
@@ -63,10 +63,10 @@ fi
 
 echo "🔥 正在启动唤醒词识别服务..."
 
-kill -9 `ps|grep "open-xiaoai/kws/kws-monitor"|grep -v grep|awk '{print $1}'` || true
-"$KWS_MONITOR_BIN" &
+kill -9 `ps|grep "open-xiaoai/kws/monitor"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1
+"$MONITOR_BIN" &
 
-kill -9 `ps|grep "open-xiaoai/kws/kws"|grep -v grep|awk '{print $1}'` || true
+kill -9 `ps|grep "open-xiaoai/kws/kws"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1
 "$KWS_BIN" \
     --model-type=zipformer2 \
     --tokens="$WORK_DIR/models/tokens.txt" \
