@@ -3,7 +3,7 @@
 set -e
 
 MIN_SPACE_MB=32
-DOWNLOAD_URL="https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws/kws.tar.gz"
+DOWNLOAD_BASE_URL="https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws"
 
 
 check_disk_space() {
@@ -27,6 +27,7 @@ fi
 
 
 WORK_DIR="$BASE_DIR/open-xiaoai/kws"
+KWS_BIN="$WORK_DIR/kws"
 
 if [ ! -d "$WORK_DIR" ]; then
     mkdir -p "$WORK_DIR"
@@ -34,17 +35,39 @@ fi
 
 if [ ! -f "$WORK_DIR/kws" ]; then
     echo "🔥 正在下载模型文件..."
-    curl -L -# -o "$WORK_DIR/kws.tar.gz" https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws/kws.tar.gz
+    curl -L -# -o "$WORK_DIR/kws.tar.gz" "$DOWNLOAD_BASE_URL/kws.tar.gz"
     tar -xzvf "$WORK_DIR/kws.tar.gz" -C "$WORK_DIR"
+    chmod +x "$KWS_BIN"
     rm "$WORK_DIR/kws.tar.gz"
     echo "✅ 模型文件下载完毕"
 fi
 
+
+CONFIG_DIR="/data/open-xiaoai/kws"
+KWS_MONITOR_BIN="$CONFIG_DIR/kws-monitor"
+
+if [ ! -d "$CONFIG_DIR" ]; then
+    mkdir -p "$CONFIG_DIR"
+fi
+
+if [ ! -f "$KWS_MONITOR_BIN" ]; then
+    curl -L -# -o "$KWS_MONITOR_BIN" "$DOWNLOAD_BASE_URL/kws-monitor"
+    chmod +x "$KWS_MONITOR_BIN"
+fi
+
+if [ ! -f "$CONFIG_DIR/keywords.txt" ]; then
+    echo "n ǐ h ǎo x iǎo zh ì @你好小智" >> "$CONFIG_DIR/keywords.txt"
+    echo "d òu b āo d òu b āo @豆包豆包" >> "$CONFIG_DIR/keywords.txt"
+    echo "✅ 默认关键词已创建"
+fi
+
 echo "🔥 正在启动唤醒词识别服务..."
 
-chmod +x "$WORK_DIR/kws"
+kill -9 `ps|grep "open-xiaoai/kws/kws-monitor"|grep -v grep|awk '{print $1}'`
+"$KWS_MONITOR_BIN" &
 
-"$WORK_DIR/kws" \
+kill -9 `ps|grep "open-xiaoai/kws/kws"|grep -v grep|awk '{print $1}'`
+"$KWS_BIN" \
     --model-type=zipformer2 \
     --tokens="$WORK_DIR/models/tokens.txt" \
     --encoder="$WORK_DIR/models/encoder.onnx" \
