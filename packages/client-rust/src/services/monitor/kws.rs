@@ -16,7 +16,7 @@ pub enum KwsMonitorEvent {
 
 pub struct KwsMonitor;
 
-static KWS_FILE_PATH: &str = "/tmp/open-xiaoai/kws.log";
+pub static KWS_FILE_PATH: &str = "/tmp/open-xiaoai/kws.log";
 
 static LAST_TIMESTAMP: AtomicU64 = AtomicU64::new(0);
 

@@ -4,11 +4,11 @@ version = "1.0.0"
 edition = "2021"
 
 [profile.release]
-lto = true   
-opt-level = "s"  
-codegen-units = 1 
-panic = "abort" 
-strip = true   
+lto = true
+opt-level = "s"
+codegen-units = 1
+panic = "abort"
+strip = true
 debug = false
 
 [workspace.metadata.cross.target.armv7-unknown-linux-gnueabihf]
@@ -21,3 +21,4 @@ tokio-tungstenite = "0.26.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 uuid = { version = "1.15.1", features = ["v4"] }
+rand = "0.9.1"
