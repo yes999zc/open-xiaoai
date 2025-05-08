@@ -1,8 +1,5 @@
 # Open-XiaoAI x Sherpa-ONNX
 
-> [!CAUTION]
-> 下面的教程和脚本正在开发整理中，请勿直接使用！🚨
-
 > [!IMPORTANT]
 > 本教程仅适用于 **小爱音箱 Pro（LX06）** 和 **Xiaomi 智能音箱 Pro（OH2P）**
 
@@ -35,4 +32,23 @@ curl -L -o /data/init.sh https://gitee.com/idootop/artifacts/releases/download/o
 uv run keywords.py --tokens tokens.txt --output keywords.txt --text my-keywords.txt
 ```
 
-将更新后的 `keywords.txt`（你的电脑）复制到 `/data/open-xiaoai/kws/keywords.txt`（小爱音箱），然后重启小爱音箱即可。
+然后将你电脑上的 `keywords.txt` 复制到小爱音箱 `/data/open-xiaoai/kws/keywords.txt`，重启小爱音箱即可。
+
+## 设置欢迎语
+
+你也可以设置自定义唤醒词唤醒后的提示语。首先新建一个 `reply.txt` 文件：
+
+```txt
+主人你好，请问有什么吩咐？
+https://example.com/music.wav
+file:///usr/share/sound-vendor/AiNiRobot/wakeup_ei_01.wav
+```
+
+注意：
+
+- 每行一句欢迎语
+- 支持文字和音频链接
+- 多条欢迎语会随机选择一句播放
+- 默认欢迎语与小爱同学一致：“哎”、“在”
+
+然后将你电脑上的 `reply.txt`复制到小爱音箱 `/data/open-xiaoai/kws/reply.txt`，重启小爱音箱即可。
