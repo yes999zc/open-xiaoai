@@ -63,10 +63,10 @@ fi
 
 echo "🔥 正在启动唤醒词识别服务..."
 
-kill -9 `ps|grep "open-xiaoai/kws/monitor"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1
+kill -9 `ps|grep "open-xiaoai/kws/monitor"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1 || true
 "$MONITOR_BIN" &
 
-kill -9 `ps|grep "open-xiaoai/kws/kws"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1
+kill -9 `ps|grep "open-xiaoai/kws/kws"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1 || true
 "$KWS_BIN" \
     --model-type=zipformer2 \
     --tokens="$WORK_DIR/models/tokens.txt" \
