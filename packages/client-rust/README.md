@@ -7,20 +7,41 @@
 - 转发小爱音箱上的事件到 Server 端（语音识别结果、播放状态等）
 - 响应来自 Server 端的指令调用（执行脚本、播放音频流、系统升级等）
 
+## 快速开始
+
+> [!NOTE]
+> 以下操作需要先将小爱音箱刷机， 然后 SSH 连接到小爱音箱。👉 [教程](../../docs/flash.md)
+
+首先在小爱音箱上安装启动脚本
+
+```shell
+# 下载到 /data/init.sh 开机时自启动
+curl -L -o /data/init.sh https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-client/init.sh
+```
+
+> [!NOTE]
+> 请先在你的电脑上运行其他 server 演示程序，获取 server 地址
+
+然后配置你要连接的 server 地址。注意安全！不要连接来路不明的 server 🚨
+
+```shell
+# 创建 open-xiaoai 文件夹
+mkdir /data/open-xiaoai
+
+# 更新 server 地址（注意替换成自己的 server 地址）
+cat 'ws://192.168.31.227:4399' > /data/open-xiaoai/server.txt
+```
+
+最后重启小爱音箱，使更新后的 server 地址生效。
+
 > [!TIP]
-> 本项目 Rust 端通过 binding 与 Python 和 Node.js 端双向互调，实现了网络通信模块的共享复用。当然你也可以参考 Rust 端通信协议源码，在其他 Server 端重新实现 WebSocket 通信过程。
+> 如果你是一名开发者，想要修改源代码实现自己想要的功能，可以按照下面的步骤，自行编译运行该项目。
 
 ## 编译运行
-
-> [!IMPORTANT]
-> 本项目只是一个简单的演示程序，抛砖引玉，并未提供任何预构建产物，仅适合有动手能力的人自行编译运行。你可以按需修改源代码，增删自己想要的功能。
 
 首先，你需要在电脑上安装 `Rust` 开发环境 👉 [传送门](https://www.rust-lang.org/)
 
 为了构建能够在小爱音箱上运行的 ARMv7 应用，你还需要安装 `cross` 👉 [传送门](https://github.com/cross-rs/cross)
-
-> [!TIP]
-> 如果你是 Apple silicon 芯片，为了能够正常使用 cross 交叉编译镜像，请先在 Docker Desktop - Settings - General - Virtual Machine Options 中打开 Apple Virtual framework 选项，然后开启 `Use Rosetta for x86_64/amd64 emulation on Apple Silicon`
 
 ```shell
 # 安装依赖
@@ -30,8 +51,8 @@ cargo fetch
 cross build --release --target armv7-unknown-linux-gnueabihf
 ```
 
-> [!NOTE]
-> 以下操作需要先将小爱音箱刷机， 然后 SSH 连接到小爱音箱。👉 [教程](../../docs/flash.md)
+> [!TIP]
+> 如果你是 Apple silicon 芯片，为了能够正常使用 cross 交叉编译镜像，请先在 Docker Desktop - Settings - General - Virtual Machine Options 中打开 Apple Virtual framework 选项，然后开启 `Use Rosetta for x86_64/amd64 emulation on Apple Silicon`
 
 编译成功后，将构建好的补丁程序 `client` 复制到小爱音箱上
 
@@ -92,6 +113,7 @@ chmod +x /data/open-xiaoai/client
 
 其默认提供了**执行任意脚本**的能力演示，虽然在启动 Client 端时需要由你本人指定可信的 Server 端连接地址，但还是要务必小心！
 
-毕竟再怎么小心都不为过 :)
+> [!TIP]
+> 本项目 Rust 端通过 binding 与 Python 和 Node.js 端双向互调，实现了网络通信模块的共享复用。当然你也可以参考 Rust 端通信协议源码，在其他 Server 端重新实现 WebSocket 通信过程。
 
 你也可以 Fork 本项目，在此基础上将 MiGPT 和小智 AI 等业务逻辑完全放在 Client 端运行，这样就不需要额外的服务器或 NAS 设备来部署运行了。
