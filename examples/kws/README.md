@@ -11,7 +11,7 @@
 
 ## 安装脚本
 
-在小爱音箱上安装启动脚本，然后重启小爱音响。
+在小爱音箱上安装启动脚本，然后重启小爱音箱。
 
 ```shell
 # 下载到 /data/init.sh 开机时自启动
@@ -32,7 +32,21 @@ curl -L -o /data/init.sh https://gitee.com/idootop/artifacts/releases/download/o
 uv run keywords.py --tokens tokens.txt --output keywords.txt --text my-keywords.txt
 ```
 
-然后将你电脑上的 `keywords.txt` 复制到小爱音箱 `/data/open-xiaoai/kws/keywords.txt`，重启小爱音箱即可。
+然后将你电脑上的 `keywords.txt` 复制到小爱音箱 `/data/open-xiaoai/kws/keywords.txt`。
+
+如果你不方便复制文件，也可以直接在小爱音箱上运行以下命令（记得修改自己的唤醒词）。
+
+```shell
+cat <<EOF > /data/open-xiaoai/kws/keywords.txt
+t iān m āo j īng l íng @天猫精灵
+x iǎo d ù x iǎo d ù @小度小度
+d òu b āo d òu b āo @豆包豆包
+n ǐ h ǎo x iǎo zh ì @你好小智
+EOF 
+```
+
+> [!TIP]
+> 修改完毕后，记得重启小爱音箱使新配置生效。
 
 ## 设置欢迎语
 
@@ -51,4 +65,44 @@ file:///usr/share/sound-vendor/AiNiRobot/wakeup_ei_01.wav
 - 多条欢迎语会随机选择一句播放
 - 默认欢迎语与小爱同学一致：“哎”、“在”
 
-然后将你电脑上的 `reply.txt`复制到小爱音箱 `/data/open-xiaoai/kws/reply.txt`，重启小爱音箱即可。
+然后将你电脑上的 `reply.txt`复制到小爱音箱 `/data/open-xiaoai/kws/reply.txt`。
+
+如果你不方便复制文件，也可以直接在小爱音箱上运行以下命令（记得修改自己的欢迎语）。
+
+```shell
+cat <<EOF > /data/open-xiaoai/kws/reply.txt
+主人你好，请问有什么吩咐？
+https://example.com/music.wav
+file:///usr/share/sound-vendor/AiNiRobot/wakeup_ei_01.wav
+EOF 
+```
+
+> [!TIP]
+> 修改完毕后，记得重启小爱音箱使新配置生效。
+
+
+## 常见问题
+
+### Q：唤醒词识别不是很灵敏？
+
+由于小爱音箱 client 端算力和存储空间有限，默认只使用了一个较小的语音识别模型，所以识别效果并不是很完美，需要多多尝试。
+
+如果你想要更完美的唤醒词识别效果，可以在 server 端运行更大规模、更先进的 AI 模型，来进行唤醒词识别。推荐使用 [FunASR](https://github.com/modelscope/FunASR) 和 [Sherpa-ONNX](https://github.com/k2-fsa/sherpa-onnx)。
+
+### Q：能不能设置英文/方言作为唤醒词？比如：Siri
+
+默认使用的小型语音识别模型只支持中文（普通话）作为唤醒词。
+
+如果你需要多语言唤醒词，比如英文、日语、韩语或方言等，可以在 server 端运行更大规模、更先进的 AI 模型，来进行唤醒词识别。推荐使用 [FunASR](https://github.com/modelscope/FunASR) 和 [Sherpa-ONNX](https://github.com/k2-fsa/sherpa-onnx)。
+
+### Q：能否自定义唤醒词的响应动作？比如：关灯
+
+该脚本默认不支持自定义唤醒词触发后的执行动作。
+
+如果你想要自定义唤醒词的执行动作，可以参考 [open-xiaoai](https://github.com/idootop/open-xiaoai) 里的演示程序，根据 server 端接收到的小爱音箱上的唤醒词事件，实时触发任意自定义操作（比如：打电话，订外卖等）。
+
+### Q：是否支持说话人（声纹）识别？
+
+由于小爱音箱 client 端算力和存储空间有限，默认只使用了一个较小的语音识别模型，并不支持说话人识别等高阶功能。
+
+如果你需要声纹识别、连续对话等高阶功能，可以在 server 端运行更大规模、更先进的 AI 模型，来进行语音识别和对话管理。推荐使用 [FunASR](https://github.com/modelscope/FunASR) 和 [Sherpa-ONNX](https://github.com/k2-fsa/sherpa-onnx)。
