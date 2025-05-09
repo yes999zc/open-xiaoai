@@ -30,6 +30,10 @@
 
 [![](./docs/images/xiaozhi.jpg)](https://www.bilibili.com/video/BV1NBXWYSEvX)
 
+👉 [小爱音箱自定义唤醒词演示视频](https://www.bilibili.com/video/BV1YfVUz5EMj)
+
+[![](./docs/images/kws.jpg)](https://www.bilibili.com/video/BV1YfVUz5EMj)
+
 👉 [小爱音箱接入 MiGPT 演示视频](https://www.bilibili.com/video/BV1N1421y7qn)
 
 [![](./docs/images/migpt.jpg)](https://www.bilibili.com/video/BV1N1421y7qn)
@@ -42,9 +46,10 @@
 本项目由 Client 端 + Server 端两部分组成，你可以按照以下顺序运行该项目：
 
 1. 刷机更新小爱音箱补丁固件，开启并 SSH 连接到小爱音箱 👉 [教程](docs/flash.md)
-2. 在你的电脑上编译好 Client 端补丁程序，然后复制到小爱音箱上运行 👉 [教程](packages/client-rust/README.md)
-3. 在你的电脑上运行 Server 端演示程序，体验小爱音箱的全新能力 ✨
+2. 在小爱音箱上安装运行 Client 端补丁程序 👉 [教程](packages/client-rust/README.md)
+3. 运行以下演示程序，体验小爱音箱的全新能力 ✨
    - 👉 [小爱音箱接入小智 AI](examples/xiaozhi/README.md)
+   - 👉 [小爱音箱自定义唤醒词](examples/kws/README.md)
    - 👉 [小爱音箱接入 MiGPT-Next](examples/migpt/README.md)
    - 👉 [小爱音箱接入 Gemini Live API](examples/gemini/README.md)
 
