@@ -12,32 +12,33 @@
 > [!NOTE]
 > 以下操作需要先将小爱音箱刷机， 然后 SSH 连接到小爱音箱。👉 [教程](../../docs/flash.md)
 
-首先在小爱音箱上安装启动脚本
+```shell
+# 创建 open-xiaoai 文件夹
+mkdir /data/open-xiaoai
+
+# 设置 server 地址（注意替换成自己的 server 地址）
+cat 'ws://192.168.31.227:4399' > /data/open-xiaoai/server.txt
+
+# 运行启动脚本
+curl -sSfL https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-client/init.sh | sh
+```
+
+> [!IMPORTANT]
+> 你可能需要先在电脑上运行其他演示程序，以获取 server 地址
+>
+> 注意安全！不要连接来路不明的 server 🚨
+
+如果你想要开机自启动，可以运行以下命令，然后重启小爱音箱即可。
 
 ```shell
 # 下载到 /data/init.sh 开机时自启动
 curl -L -o /data/init.sh https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-client/init.sh
 ```
 
-> [!NOTE]
-> 请先在你的电脑上运行其他 server 演示程序，获取 server 地址
-
-然后配置你要连接的 server 地址。注意安全！不要连接来路不明的 server 🚨
-
-```shell
-# 创建 open-xiaoai 文件夹
-mkdir /data/open-xiaoai
-
-# 更新 server 地址（注意替换成自己的 server 地址）
-cat 'ws://192.168.31.227:4399' > /data/open-xiaoai/server.txt
-```
-
-最后重启小爱音箱，使更新后的 server 地址生效。
+## 编译运行
 
 > [!TIP]
 > 如果你是一名开发者，想要修改源代码实现自己想要的功能，可以按照下面的步骤，自行编译运行该项目。
-
-## 编译运行
 
 首先，你需要在电脑上安装 `Rust` 开发环境 👉 [传送门](https://www.rust-lang.org/)
 

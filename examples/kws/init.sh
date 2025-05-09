@@ -58,10 +58,13 @@ fi
 if [ ! -f "$CONFIG_DIR/keywords.txt" ]; then
     echo "n ǐ h ǎo x iǎo zh ì @你好小智" >> "$CONFIG_DIR/keywords.txt"
     echo "d òu b āo d òu b āo @豆包豆包" >> "$CONFIG_DIR/keywords.txt"
-    echo "✅ 默认关键词已创建"
+    echo "t iān m āo j īng l íng @天猫精灵" >> "$CONFIG_DIR/keywords.txt"
+    echo "x iǎo d ù x iǎo d ù @小度小度" >> "$CONFIG_DIR/keywords.txt"
+    echo "✅ 默认唤醒词已创建"
 fi
 
-echo "🔥 正在启动唤醒词识别服务..."
+echo "🔥 正在启动唤醒词识别服务，请耐心等待..."
+echo "🐢 模型加载较慢，请在语音提示初始化成功后，再使用自定义唤醒词"
 
 kill -9 `ps|grep "open-xiaoai/kws/monitor"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1 || true
 "$MONITOR_BIN" &

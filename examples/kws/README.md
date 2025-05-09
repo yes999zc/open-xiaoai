@@ -5,13 +5,34 @@
 
 小爱音箱自定义唤醒词，基于 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)。
 
-## 刷机
 
-首先按照 [open-xiaoai](https://github.com/idootop/open-xiaoai) 里的教程将小爱音箱刷机，然后 SSH 连接到小爱音箱。
+## 快速开始
 
-## 安装脚本
+> [!NOTE]
+> 以下操作需要先将小爱音箱刷机， 然后 SSH 连接到小爱音箱。👉 [教程](https://github.com/idootop/open-xiaoai/blob/main/docs/flash.md)
 
-在小爱音箱上安装启动脚本，然后重启小爱音箱。
+```shell
+# 创建 open-xiaoai/kws 文件夹
+mkdir -p /data/open-xiaoai/kws
+
+# 设置自定义唤醒词
+cat <<EOF > /data/open-xiaoai/kws/keywords.txt
+t iān m āo j īng l íng @天猫精灵
+x iǎo d ù x iǎo d ù @小度小度
+d òu b āo d òu b āo @豆包豆包
+n ǐ h ǎo x iǎo zh ì @你好小智
+EOF
+
+# 设置唤醒提示语（可选）
+cat <<EOF > /data/open-xiaoai/kws/reply.txt
+主人你好，请问有什么吩咐？
+EOF
+
+# 运行启动脚本
+curl -sSfL https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws/init.sh | sh
+```
+
+如果你想要开机自启动，可以运行以下命令，然后重启小爱音箱即可。
 
 ```shell
 # 下载到 /data/init.sh 开机时自启动
@@ -34,7 +55,7 @@ uv run keywords.py --tokens tokens.txt --output keywords.txt --text my-keywords.
 
 然后将你电脑上的 `keywords.txt` 复制到小爱音箱 `/data/open-xiaoai/kws/keywords.txt`。
 
-如果你不方便复制文件，也可以直接在小爱音箱上运行以下命令（记得修改自己的唤醒词）。
+如果你不方便复制文件，也可以直接在小爱音箱上运行以下命令（记得修改成自己的唤醒词）。
 
 ```shell
 cat <<EOF > /data/open-xiaoai/kws/keywords.txt
@@ -46,7 +67,7 @@ EOF
 ```
 
 > [!TIP]
-> 修改完毕后，记得重启小爱音箱使新配置生效。
+> 修改完毕后，记得重启脚本或小爱音箱使新配置生效。
 
 ## 设置欢迎语
 
@@ -67,7 +88,7 @@ file:///usr/share/sound-vendor/AiNiRobot/wakeup_ei_01.wav
 
 然后将你电脑上的 `reply.txt`复制到小爱音箱 `/data/open-xiaoai/kws/reply.txt`。
 
-如果你不方便复制文件，也可以直接在小爱音箱上运行以下命令（记得修改自己的欢迎语）。
+如果你不方便复制文件，也可以直接在小爱音箱上运行以下命令（记得修改成自己的欢迎语）。
 
 ```shell
 cat <<EOF > /data/open-xiaoai/kws/reply.txt
@@ -78,7 +99,7 @@ EOF
 ```
 
 > [!TIP]
-> 修改完毕后，记得重启小爱音箱使新配置生效。
+> 修改完毕后，记得重启脚本或小爱音箱使新配置生效。
 
 ## 常见问题
 
