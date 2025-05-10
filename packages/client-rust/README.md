@@ -17,7 +17,7 @@
 mkdir /data/open-xiaoai
 
 # 设置 server 地址（注意替换成自己的 server 地址）
-cat 'ws://192.168.31.227:4399' > /data/open-xiaoai/server.txt
+echo 'ws://192.168.31.227:4399' > /data/open-xiaoai/server.txt
 
 # 运行启动脚本
 curl -sSfL https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-client/init.sh | sh
