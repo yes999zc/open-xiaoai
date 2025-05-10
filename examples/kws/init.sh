@@ -33,7 +33,7 @@ if [ ! -d "$WORK_DIR" ]; then
     mkdir -p "$WORK_DIR"
 fi
 
-if [ ! -f "$WORK_DIR/kws" ]; then
+if [ ! -f "$WORK_DIR/models/encoder.onnx" ]; then
     echo "🔥 正在下载模型文件..."
     curl -L -# -o "$WORK_DIR/kws.tar.gz" "$DOWNLOAD_BASE_URL/kws.tar.gz"
     tar -xzvf "$WORK_DIR/kws.tar.gz" -C "$WORK_DIR"
