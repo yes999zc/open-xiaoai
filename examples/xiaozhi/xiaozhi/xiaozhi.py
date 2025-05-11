@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import re
 import threading
 import time
 
@@ -319,11 +320,24 @@ class XiaoZhi:
             text = data.get("text", "")
             if text:
                 logger.info(f"<< {text}")
-                self.schedule(lambda: self.set_chat_message("assistant", text))
 
-                # 检查是否包含验证码信息
-                if "请登录到控制面板添加设备，输入验证码" in text:
-                    self.schedule(lambda: self._handle_verification_code(text))
+                need_verification_code = re.search(r"验证码.*\d+", text)
+
+                verification_tips = (
+                    "\n🔥 注意：绑定成功后，需要重新运行本应用才会生效"
+                    if need_verification_code
+                    else ""
+                )
+
+                if need_verification_code:
+                    logger.info(verification_tips)
+
+                self.schedule(
+                    lambda: self.set_chat_message(
+                        "assistant",
+                        text + verification_tips,
+                    )
+                )
 
     def _handle_tts_start(self):
         """处理TTS开始事件"""
@@ -488,7 +502,6 @@ class XiaoZhi:
         if state == DeviceState.IDLE:
             self.display.update_status("待命")
             self.display.update_emotion("😶")
-            # 停止输出流但不关闭它
             if (
                 self.audio_codec.output_stream
                 and self.audio_codec.output_stream.is_active()
@@ -768,33 +781,6 @@ class XiaoZhi:
             self.loop_thread.join(timeout=1.0)
 
         logger.info("应用程序已关闭")
-
-    def _handle_verification_code(self, text):
-        """处理验证码信息"""
-        try:
-            # 提取验证码
-            import re
-
-            verification_code = re.search(r"验证码：(\d+)", text)
-            if verification_code:
-                code = verification_code.group(1)
-
-                # 尝试打开浏览器
-                try:
-                    import webbrowser
-
-                    if webbrowser.open("https://xiaozhi.me/login"):
-                        logger.info("已打开登录页面")
-                    else:
-                        logger.warning("无法打开浏览器")
-                except Exception as e:
-                    logger.warning(f"打开浏览器时出错: {e}")
-
-                # 无论如何都显示验证码
-                self.alert("验证码", f"您的验证码是: {code}")
-
-        except Exception as e:
-            logger.error(f"处理验证码时出错: {e}")
 
     def _on_mode_changed(self, auto_mode):
         """处理对话模式变更"""

@@ -53,5 +53,7 @@ XIAOZHI_CONFIG = {
 
 请按照提示注册你的小智 AI 账号，然后创建 Agent 绑定设备即可开始体验。
 
+注意：绑定设备成功后，需要重新运行本应用才会生效。
+
 > [!NOTE]
 > 本项目只是一个简单的演示程序，抛砖引玉。如果你想要更多的功能，比如唤醒词识别、语音转文字、连续对话等，可以参考开源的 [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) 项目，借助 Python 丰富的 AI 生态自行实现。
