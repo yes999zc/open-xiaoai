@@ -6,7 +6,7 @@ import { RustServer } from "./open-xiaoai.js";
 import { OpenXiaoAISpeaker } from "./speaker.js";
 import { randomUUID } from "node:crypto";
 
-type OpenXiaoAIConfig = Prettify<EngineConfig<OpenXiaoAIEngine>>;
+export type OpenXiaoAIConfig = Prettify<EngineConfig<OpenXiaoAIEngine>>;
 
 const kDefaultOpenXiaoAIConfig: OpenXiaoAIConfig = {
   //

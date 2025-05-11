@@ -1,0 +1,19 @@
+# 排除全部文件
+**/*
+
+# 只保留构建相关的文件
+!examples/migpt/src
+!examples/migpt/migpt
+!examples/migpt/config.ts
+!examples/migpt/package.json
+!examples/migpt/pnpm-lock.yaml
+!examples/migpt/Cargo.toml
+!examples/migpt/Cargo.lock
+!examples/migpt/tsconfig.json
+examples/migpt/migpt/open-xiaoai.node
+
+!packages/client-rust/src
+!packages/client-rust/Cargo.toml
+!packages/client-rust/Cargo.lock
+
+

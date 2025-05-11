@@ -1,18 +1,65 @@
 # Open-XiaoAI x MiGPT-Next
 
-[Open-XiaoAI](https://github.com/idootop/open-xiaoai) 的 Node.js 版 Server 端，用来演示小爱音箱接入[MiGPT-Next](https://github.com/idootop/migpt-next)。
+[Open-XiaoAI](https://github.com/idootop/open-xiaoai) 的 Node.js 版 Server 端，用来演示小爱音箱接入[MiGPT](https://github.com/idootop/mi-gpt)（完美版）。
 
-## 环境准备
+相比原版的 `MiGPT` 和 `MiGPT-Next` 项目，该版本可以完美打断小爱音箱的回复，响应延迟更低，效果更完美 👍
+
+## 快速开始
+
+> [!NOTE]
+> 继续下面的操作之前，你需要先在小爱音箱上启动运行 Rust 补丁程序 [👉 教程](../../packages/client-rust/README.md)
+
+首先，克隆仓库代码到本地。
+
+```shell
+# 克隆代码
+git clone https://github.com/idootop/open-xiaoai.git
+
+# 进入当前项目根目录
+cd examples/migpt
+```
+
+然后把 `config.ts` 文件里的配置修改成你自己的。
+
+```typescript
+export const kOpenXiaoAIConfig = {
+  openai: {
+    model: "gpt-4.1-mini",
+    baseURL: "https://api.openai.com/v1",
+    apiKey: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  },
+  prompt: {
+    system: "你是一个智能助手，请根据用户的问题给出回答。",
+  },
+  async onMessage(engine, { text }) {
+    if (text === "测试") {
+      return { text: "你好，很高兴认识你！" };
+    }
+  },
+};
+```
+
+### Docker 运行
+
+[![Docker Image Version](https://img.shields.io/docker/v/idootop/open-xiaoai-migpt?color=%23086DCD&label=docker%20image)](https://hub.docker.com/r/idootop/open-xiaoai-migpt)
+
+推荐新手小白使用以下命令，直接 Docker 一键运行。
+
+```shell
+docker run -it --rm -p 4399:4399 -v $(pwd)/config.ts:/app/config.ts idootop/open-xiaoai-migpt:latest
+```
+
+### 编译运行
+
+> [!TIP]
+> 如果你是一名开发者，想要修改源代码实现自己想要的功能，可以按照下面的步骤，自行编译运行该项目。
 
 为了能够正常编译运行该项目，你需要安装以下依赖环境：
 
 - Node.js v22.x: https://nodejs.org/zh-cn/download
 - Rust: https://www.rust-lang.org/learn/get-started
 
-## 编译运行
-
-> [!NOTE]
-> 请先确认你已经将小爱音箱刷机成功，并安装运行了 Rust 补丁程序 [👉 教程](../../packages/client-rust/README.md)
+准备好开发环境后，按以下步骤即可正常启动该项目。
 
 ```bash
 # 启用 PNPM 包管理工具
@@ -23,36 +70,6 @@ pnpm install
 
 # 编译运行
 pnpm dev
-```
-
-首次运行你需要先配置自己的大模型服务，才能正常获取 AI 回复。
-
-> [!NOTE]
-> 你可以在下面的 `onMessage` 函数中，自定义你想要的回复逻辑，更多配置参考 👉 [MiGPT-Next](https://github.com/idootop/migpt-next/tree/main/apps/next)
-
-```typescript
-// packages/server-node/migpt/index.ts
-import { sleep } from "@mi-gpt/utils";
-import { OpenXiaoAI } from "./xiaoai.js";
-
-async function main() {
-  await OpenXiaoAI.start({
-    openai: {
-      model: "gpt-4o-mini",
-      baseURL: "https://api.openai.com/v1",
-      apiKey: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    },
-    async onMessage(_engine, { text }) {
-      if (text.startsWith("你好")) {
-        await sleep(1000);
-        return { text: "你好，很高兴认识你！" };
-      }
-    },
-  });
-  process.exit(0);
-}
-
-main();
 ```
 
 ## 注意事项
