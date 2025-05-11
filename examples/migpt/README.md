@@ -43,7 +43,7 @@ export const kOpenXiaoAIConfig = {
 
 [![Docker Image Version](https://img.shields.io/docker/v/idootop/open-xiaoai-migpt?color=%23086DCD&label=docker%20image)](https://hub.docker.com/r/idootop/open-xiaoai-migpt)
 
-推荐新手小白使用以下命令，直接 Docker 一键运行。
+推荐使用以下命令，直接 Docker 一键运行。
 
 ```shell
 docker run -it --rm -p 4399:4399 -v $(pwd)/config.ts:/app/config.ts idootop/open-xiaoai-migpt:latest
