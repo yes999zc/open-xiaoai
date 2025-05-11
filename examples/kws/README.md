@@ -24,15 +24,18 @@ cat <<EOF > /data/open-xiaoai/kws/reply.txt
 主人你好，请问有什么吩咐？
 EOF
 
-# 运行启动脚本
+# 运行启动脚本 init.sh
 curl -sSfL https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws/init.sh | sh
 ```
 
-如果你想要开机自启动，可以运行以下命令，然后重启小爱音箱即可。
+如果你想要开机自启动，运行以下命令重启小爱音箱即可。
 
 ```shell
-# 下载到 /data/init.sh 开机时自启动
-curl -L -o /data/init.sh https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws/init.sh
+# 下载 boot.sh 到 /data/init.sh 开机时自启动
+curl -L -o /data/init.sh https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws/boot.sh
+
+# 重启小爱音箱
+reboot
 ```
 
 ## 设置唤醒词

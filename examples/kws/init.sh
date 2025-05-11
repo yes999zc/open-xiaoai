@@ -44,15 +44,9 @@ fi
 
 
 CONFIG_DIR="/data/open-xiaoai/kws"
-MONITOR_BIN="$CONFIG_DIR/monitor"
 
 if [ ! -d "$CONFIG_DIR" ]; then
     mkdir -p "$CONFIG_DIR"
-fi
-
-if [ ! -f "$MONITOR_BIN" ]; then
-    curl -L -# -o "$MONITOR_BIN" "$DOWNLOAD_BASE_URL/monitor"
-    chmod +x "$MONITOR_BIN"
 fi
 
 if [ ! -f "$CONFIG_DIR/keywords.txt" ]; then
@@ -63,11 +57,19 @@ if [ ! -f "$CONFIG_DIR/keywords.txt" ]; then
     echo "✅ 默认唤醒词已创建"
 fi
 
+if [ "$1" != "--no-monitor" ]; then
+    # 如果没有设置 --no-monitor 参数，则启动 monitor 进程
+    MONITOR_BIN="$CONFIG_DIR/monitor"
+    if [ ! -f "$MONITOR_BIN" ]; then
+        curl -L -# -o "$MONITOR_BIN" "$DOWNLOAD_BASE_URL/monitor"
+        chmod +x "$MONITOR_BIN"
+    fi
+    kill -9 `ps|grep "open-xiaoai/kws/monitor"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1 || true
+    "$MONITOR_BIN" &
+fi
+
 echo "🔥 正在启动唤醒词识别服务，请耐心等待..."
 echo "🐢 模型加载较慢，请在语音提示初始化成功后，再使用自定义唤醒词"
-
-kill -9 `ps|grep "open-xiaoai/kws/monitor"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1 || true
-"$MONITOR_BIN" &
 
 kill -9 `ps|grep "open-xiaoai/kws/kws"|grep -v grep|awk '{print $1}'` > /dev/null 2>&1 || true
 "$KWS_BIN" \

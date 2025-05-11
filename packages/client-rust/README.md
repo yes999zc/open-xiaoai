@@ -19,7 +19,7 @@ mkdir /data/open-xiaoai
 # 设置 server 地址（注意替换成自己的 server 地址）
 echo 'ws://192.168.31.227:4399' > /data/open-xiaoai/server.txt
 
-# 运行启动脚本
+# 运行启动脚本 init.sh
 curl -sSfL https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-client/init.sh | sh
 ```
 
@@ -28,11 +28,14 @@ curl -sSfL https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-cli
 >
 > 注意安全！不要连接来路不明的 server 🚨
 
-如果你想要开机自启动，可以运行以下命令，然后重启小爱音箱即可。
+如果你想要开机自启动，运行以下命令重启小爱音箱即可。
 
 ```shell
-# 下载到 /data/init.sh 开机时自启动
-curl -L -o /data/init.sh https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-client/init.sh
+# 下载 boot.sh 文件到 /data/init.sh 开机时自启动
+curl -L -o /data/init.sh https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-client/boot.sh
+
+# 重启小爱音箱
+reboot
 ```
 
 ## 编译运行
