@@ -1,3 +1,4 @@
+use crate::python::PythonManager;
 use open_xiaoai::base::{AppError, VERSION};
 use open_xiaoai::services::audio::config::AudioConfig;
 use open_xiaoai::services::connect::data::{Event, Request, Response, Stream};
@@ -7,12 +8,11 @@ use open_xiaoai::services::connect::rpc::RPC;
 use open_xiaoai::services::speaker::SpeakerManager;
 use open_xiaoai::utils::task::TaskManager;
 use pyo3::types::PyBytes;
+use pyo3::types::PyString;
 use pyo3::Python;
 use serde_json::json;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::accept_async;
-
-use crate::python::PythonManager;
 
 pub struct AppServer;
 
@@ -127,6 +127,8 @@ async fn on_stream(stream: Stream) -> Result<(), AppError> {
 }
 
 async fn on_event(event: Event) -> Result<(), AppError> {
-    crate::pylog!("🔥 收到 Event: {:?}", event);
+    let event_json = serde_json::to_string(&event)?;
+    let data = Python::with_gil(|py| PyString::new(py, &event_json).into());
+    PythonManager::instance().call_fn("on_event", Some(data))?;
     Ok(())
 }

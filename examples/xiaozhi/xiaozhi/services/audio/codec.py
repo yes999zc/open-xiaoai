@@ -1,14 +1,15 @@
 import logging
 import queue
-import numpy as np
-import pyaudio
-import opuslib
-from xiaozhi.services.protocols.typing import AudioConfig
-import time
 import sys
+import time
+
+import numpy as np
+import opuslib
+import pyaudio
 
 from xiaozhi.services.audio.stream import MyAudio
-from xiaozhi.xiaoai import XiaoAi
+from xiaozhi.services.protocols.typing import AudioConfig
+from xiaozhi.xiaoai import XiaoAI
 
 logger = logging.getLogger("AudioCodec")
 
@@ -24,14 +25,14 @@ class AudioCodec:
         self.opus_encoder = None
         self.opus_decoder = None
         self.audio_decode_queue = queue.Queue()
-        self._is_closing = False 
+        self._is_closing = False
 
         self._initialize_audio()
 
     def _initialize_audio(self):
         """初始化音频设备和编解码器"""
         try:
-            self.audio = MyAudio() if XiaoAi.mode == "xiaoai" else pyaudio.PyAudio()
+            self.audio = MyAudio() if XiaoAI.mode == "xiaoai" else pyaudio.PyAudio()
 
             # 初始化音频输入流
             self.input_stream = self.audio.open(
@@ -50,7 +51,7 @@ class AudioCodec:
                 output=True,
                 frames_per_buffer=AudioConfig.FRAME_SIZE,
             )
-            
+
             # 初始化Opus编码器
             self.opus_encoder = opuslib.Encoder(
                 fs=AudioConfig.SAMPLE_RATE,
@@ -193,7 +194,7 @@ class AudioCodec:
                     if self.output_stream.is_active():
                         self.output_stream.stop_stream()
                     self.output_stream.close()
-                except Exception as e:
+                except Exception:
                     # logger.warning(f"关闭旧输出流时出错: {e}")
                     pass
 

@@ -4,7 +4,7 @@ import sys
 
 from xiaozhi.services.audio.setup import setup_opus
 from xiaozhi.utils.logging_config import setup_logging
-from xiaozhi.xiaoai import XiaoAi
+from xiaozhi.xiaoai import XiaoAI
 from xiaozhi.xiaozhi import XiaoZhi
 
 logger = logging.getLogger("Main")
@@ -26,7 +26,7 @@ def setup_graceful_shutdown():
 
 
 if __name__ == "__main__":
-    XiaoAi.setup_mode()
+    XiaoAI.setup_mode()
     setup_logging()
     setup_graceful_shutdown()
     sys.exit(main())

@@ -15,7 +15,7 @@ from xiaozhi.services.protocols.typing import (
 )
 from xiaozhi.services.protocols.websocket_protocol import WebsocketProtocol
 from xiaozhi.utils.config_manager import ConfigManager
-from xiaozhi.xiaoai import XiaoAi
+from xiaozhi.xiaoai import XiaoAI
 
 # 配置日志
 logger = logging.getLogger("XiaoZhi")
@@ -91,7 +91,7 @@ class XiaoZhi:
         time.sleep(0.1)
 
         # 初始化应用程序（移除自动连接）
-        asyncio.run_coroutine_threadsafe(XiaoAi.init_xiaoai(), self.loop)
+        asyncio.run_coroutine_threadsafe(XiaoAI.init_xiaoai(), self.loop)
         asyncio.run_coroutine_threadsafe(self._initialize_without_connect(), self.loop)
 
         # 启动主循环线程
