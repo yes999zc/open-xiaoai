@@ -1,8 +1,11 @@
+import json
 import logging
 import socket
 import threading
 import uuid
 from typing import Any, Optional
+
+import requests
 
 from config import XIAOZHI_CONFIG
 
@@ -32,11 +35,13 @@ class ConfigManager:
         self._config = {
             "CLIENT_ID": None,
             "DEVICE_ID": None,
+            "MQTT_INFO": None,
             "NETWORK": XIAOZHI_CONFIG,
         }
 
         self._initialize_client_id()
         self._initialize_device_id()
+        self._initialize_mqtt_info()
 
     def get_client_id(self) -> str:
         """获取客户端ID"""
@@ -124,4 +129,97 @@ class ConfigManager:
                     logger.error("Failed to save new DEVICE_ID")
             except Exception as e:
                 logger.error(f"Error generating DEVICE_ID: {e}")
-                logger.error(f"Error generating DEVICE_ID: {e}")
+
+    def refresh_mqtt_info(self):
+        """刷新 MQTT 信息"""
+        if not self._config["MQTT_INFO"]:
+            self._initialize_mqtt_info()
+
+    def _initialize_mqtt_info(self):
+        try:
+            mqtt_info = self._get_ota_version()
+            if mqtt_info:
+                self.update_config("MQTT_INFO", mqtt_info)
+                self.logger.info("MQTT信息已成功更新")
+                return mqtt_info
+            else:
+                self.logger.warning("获取MQTT信息失败，使用已保存的配置")
+                return self.get_config("MQTT_INFO")
+        except Exception as e:
+            self.logger.error(f"初始化MQTT信息失败: {e}")
+            return self.get_config("MQTT_INFO")
+
+    def _get_ota_version(self):
+        """获取OTA服务器的MQTT信息"""
+        MAC_ADDR = self.get_device_id()
+        OTA_URL = self.get_config("NETWORK.OTA_URL")
+        headers = {
+            "Activation-Version": "1",
+            "Device-Id": MAC_ADDR,
+            "Content-Type": "application/json",
+            "Accept-Language": "zh-CN",
+        }
+
+        # 构建设备信息 payload
+        payload = {
+            "mac_address": MAC_ADDR,
+            "board": {
+                "type": "lc-esp32-s3",
+                "name": "立创ESP32-S3开发板",
+                "features": ["wifi", "ble", "psram", "octal_flash"],
+                "ip": self.get_local_ip(),
+                "mac": MAC_ADDR,
+            },
+            "application": {
+                "name": "xiaozhi",
+                "version": "1.6.0",
+                "compile_time": "2025-4-16T12:00:00Z",
+                "idf_version": "v5.3.2",
+            },
+            "psram_size": 8388608,  # 8MB PSRAM
+            "minimum_free_heap_size": 7265024,  # 最小可用堆内存
+            "chip_model_name": "esp32s3",  # 芯片型号
+            "chip_info": {
+                "model": 9,  # ESP32-S3
+                "cores": 2,
+                "revision": 0,  # 芯片版本修订
+                "features": 20,  # WiFi + BLE + PSRAM
+            },
+            "partition_table": [],
+            "ota": {"label": "factory"},
+        }
+
+        try:
+            # 发送请求到OTA服务器
+            response = requests.post(
+                OTA_URL,
+                headers=headers,
+                json=payload,
+                timeout=10,
+            )
+
+            # 检查HTTP状态码
+            if response.status_code != 200:
+                self.logger.error(f"OTA服务器错误: HTTP {response.status_code}")
+                raise ValueError(f"OTA服务器返回错误状态码: {response.status_code}")
+
+            # 解析JSON数据
+            response_data = response.json()
+
+            self.logger.debug(
+                f"OTA服务器返回数据: {json.dumps(response_data, indent=4, ensure_ascii=False)}"
+            )
+            if "mqtt" in response_data:
+                self.logger.info("MQTT服务器信息已更新")
+                return response_data["mqtt"]
+            else:
+                self.logger.error("OTA服务器返回的数据无效: MQTT信息缺失")
+                raise ValueError("OTA服务器返回的数据无效，请检查服务器状态或MAC地址！")
+
+        except requests.Timeout:
+            self.logger.error("OTA请求超时，请检查网络或服务器状态")
+            raise ValueError("OTA请求超时！请稍后重试。")
+
+        except requests.RequestException as e:
+            self.logger.error(f"OTA请求失败: {e}")
+            raise ValueError("无法连接到OTA服务器，请检查网络连接！")
