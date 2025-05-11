@@ -35,6 +35,18 @@ uv run main.py --mode xiaozhi
 
 该模式下使用电脑的麦克风和扬声器作为音频输入输出设备，无需连接小爱音箱。
 
+## 配置文件
+
+如果你想使用自己部署的 [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server)，请更新 `config.py` 文件里的接口地址，然后重启应用。
+
+```py
+XIAOZHI_CONFIG = {
+    "OTA_URL": "https://2662r3426b.vicp.fun/xiaozhi/ota/",
+    "WEBSOCKET_URL": "wss://2662r3426b.vicp.fun/xiaozhi/v1/",
+    "WEBSOCKET_ACCESS_TOKEN": "xxxxxxxxxxxxx",
+}
+```
+
 ## 注意事项
 
 首次启动会自动打开小智 AI [管理后台](https://xiaozhi.me/)，然后提供一个验证码用来绑定设备。
