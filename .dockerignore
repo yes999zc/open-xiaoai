@@ -1,7 +1,12 @@
 # 排除全部文件
 **/*
 
-# 只保留构建相关的文件
+# Rust
+!packages/client-rust/src
+!packages/client-rust/Cargo.toml
+!packages/client-rust/Cargo.lock
+
+# MiGPT
 !examples/migpt/src
 !examples/migpt/migpt
 !examples/migpt/config.ts
@@ -12,8 +17,14 @@
 !examples/migpt/tsconfig.json
 examples/migpt/migpt/open-xiaoai.node
 
-!packages/client-rust/src
-!packages/client-rust/Cargo.toml
-!packages/client-rust/Cargo.lock
-
-
+# XiaoZhi
+!examples/xiaozhi/src
+!examples/xiaozhi/xiaozhi
+!examples/xiaozhi/Cargo.toml
+!examples/xiaozhi/Cargo.lock
+!examples/xiaozhi/config.py
+!examples/xiaozhi/main.py
+!examples/xiaozhi/uv.lock
+!examples/xiaozhi/.python-version
+!examples/xiaozhi/requirements.txt
+!examples/xiaozhi/pyproject.toml

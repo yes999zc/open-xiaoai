@@ -1,10 +1,9 @@
+import queue
 import threading
+import time
 import tkinter as tk
 from tkinter import ttk
-import queue
-import logging
-import time
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 from xiaozhi.services.display.base_display import BaseDisplay
 
@@ -13,14 +12,11 @@ class GuiDisplay(BaseDisplay):
     def __init__(self):
         super().__init__()  # 调用父类初始化
         """创建 GUI 界面"""
-        # 初始化日志
-        self.logger = logging.getLogger("Display")
-
         # 创建主窗口
         self.root = tk.Tk()
         self.root.title("小爱音箱接入小智 AI 演示")
         self.root.geometry("520x360")
-        
+
         # 在窗口底部添加作者信息
         self.author_label = ttk.Label(self.root, text="作者: https://del.wang")
         self.author_label.pack(side=tk.BOTTOM, pady=5)
@@ -135,8 +131,8 @@ class GuiDisplay(BaseDisplay):
             # 调用回调函数
             if self.button_press_callback:
                 self.button_press_callback()
-        except Exception as e:
-            self.logger.error(f"按钮按下回调执行失败: {e}")
+        except Exception:
+            pass
 
     def _on_manual_button_release(self, event):
         """手动模式按钮释放事件处理"""
@@ -147,67 +143,16 @@ class GuiDisplay(BaseDisplay):
             # 调用回调函数
             if self.button_release_callback:
                 self.button_release_callback()
-        except Exception as e:
-            self.logger.error(f"按钮释放回调执行失败: {e}")
-
-    def _on_auto_button_click(self):
-        """自动模式按钮点击事件处理"""
-        try:
-            if self.auto_callback:
-                self.auto_callback()
-        except Exception as e:
-            self.logger.error(f"自动模式按钮回调执行失败: {e}")
+        except Exception:
+            pass
 
     def _on_abort_button_click(self):
         """打断按钮点击事件处理"""
         try:
             if self.abort_callback:
                 self.abort_callback()
-        except Exception as e:
-            self.logger.error(f"打断按钮回调执行失败: {e}")
-
-    def _on_mode_button_click(self):
-        """对话模式切换按钮点击事件"""
-        try:
-            # 检查是否可以切换模式（通过回调函数询问应用程序当前状态）
-            if self.mode_callback:
-                # 如果回调函数返回False，表示当前不能切换模式
-                if not self.mode_callback(not self.auto_mode):
-                    return
-
-            # 切换模式
-            self.auto_mode = not self.auto_mode
-
-            # 更新按钮显示
-            if self.auto_mode:
-                # 切换到自动模式
-                self.update_mode_button_status("自动对话")
-
-                # 隐藏手动按钮，显示自动按钮
-                self.update_queue.put(lambda: self._switch_to_auto_mode())
-            else:
-                # 切换到手动模式
-                self.update_mode_button_status("手动对话")
-
-                # 隐藏自动按钮，显示手动按钮
-                self.update_queue.put(lambda: self._switch_to_manual_mode())
-
-        except Exception as e:
-            self.logger.error(f"模式切换按钮回调执行失败: {e}")
-
-    def _switch_to_auto_mode(self):
-        """切换到自动模式的UI更新"""
-        self.manual_btn.pack_forget()  # 移除手动按钮
-        self.auto_btn.pack(
-            side=tk.LEFT, padx=10, before=self.abort_btn
-        )  # 显示自动按钮，放在打断按钮前面
-
-    def _switch_to_manual_mode(self):
-        """切换到手动模式的UI更新"""
-        self.auto_btn.pack_forget()  # 移除自动按钮
-        self.manual_btn.pack(
-            side=tk.LEFT, padx=10, before=self.abort_btn
-        )  # 显示手动按钮，放在打断按钮前面
+        except Exception:
+            pass
 
     def update_status(self, status: str):
         """更新状态文本"""
@@ -245,8 +190,8 @@ class GuiDisplay(BaseDisplay):
                         if emotion:
                             self.update_emotion(emotion)
 
-                except Exception as e:
-                    self.logger.error(f"更新失败: {e}")
+                except Exception:
+                    pass
                 time.sleep(0.1)
 
         threading.Thread(target=update_loop, daemon=True).start()
@@ -262,23 +207,6 @@ class GuiDisplay(BaseDisplay):
             # 启动更新线程
             self.start_update_threads()
             # 在主线程中运行主循环
-            self.logger.info("开始启动GUI主循环")
             self.root.mainloop()
-        except Exception as e:
-            self.logger.error(f"GUI启动失败: {e}", exc_info=True)
-            # 尝试回退到CLI模式
-            print(f"GUI启动失败: {e}，请尝试使用CLI模式")
-
-    def update_mode_button_status(self, text: str):
-        """更新模式按钮状态"""
-        self.update_queue.put(lambda: self.mode_btn.config(text=text))
-
-    def update_button_status(self, text: str):
-        """更新按钮状态 - 保留此方法以满足抽象基类要求"""
-        # 根据当前模式更新相应的按钮
-        if self.auto_mode:
-            self.update_queue.put(lambda: self.auto_btn.config(text=text))
-        else:
-            # 在手动模式下，不通过此方法更新按钮文本
-            # 因为按钮文本由按下/释放事件直接控制
+        except Exception:
             pass

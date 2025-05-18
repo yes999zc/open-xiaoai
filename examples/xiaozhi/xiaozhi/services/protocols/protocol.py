@@ -1,6 +1,6 @@
 import json
 
-from xiaozhi.services.protocols.typing import AbortReason, ListeningMode
+from xiaozhi.services.protocols.typing import ListeningMode
 
 
 class Protocol:
@@ -38,11 +38,8 @@ class Protocol:
 
     async def send_abort_speaking(self, reason):
         """发送中止语音的消息"""
-        message = {"session_id": self.session_id, "type": "abort"}
-        if reason == AbortReason.WAKE_WORD_DETECTED:
-            message["reason"] = "wake_word_detected"
+        message = {"session_id": self.session_id, "type": reason}
         await self.send_text(json.dumps(message))
-
 
     async def send_start_listening(self, mode):
         """发送开始监听的消息"""
@@ -69,7 +66,7 @@ class Protocol:
         message = {
             "session_id": self.session_id,
             "type": "iot",
-            "descriptors": json.loads(descriptors), 
+            "descriptors": json.loads(descriptors),
         }
         await self.send_text(json.dumps(message))
 

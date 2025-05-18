@@ -19,7 +19,7 @@
 
 ```bash
 # 安装 Python 依赖
-uv sync
+uv sync --locked
 
 # 编译运行
 uv run main.py

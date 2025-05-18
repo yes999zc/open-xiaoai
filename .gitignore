@@ -39,6 +39,7 @@ yarn-error.log*
 .venv
 .mypy_cache
 __pycache__
+*.egg-info
 
 # Misc
 .DS_Store

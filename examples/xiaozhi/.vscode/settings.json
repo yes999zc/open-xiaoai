@@ -17,7 +17,6 @@
     "**/node_modules": true,
     "**/__pycache__": true,
     "*.egg-info": true,
-    ".venv": true,
     ".mypy_cache": true
   }
 }

@@ -124,9 +124,11 @@ curl -sSfL https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws
 
 ### Q：能不能设置英文/方言作为唤醒词？比如：Siri
 
-默认使用的小型语音识别模型只支持中文（普通话）作为唤醒词。
+默认使用的小型语音识别模型，只支持中文（普通话）作为唤醒词。
 
-如果你需要多语言唤醒词，比如英文、日语、韩语或方言等，可以在 server 端运行更大规模、更先进的 AI 模型，来进行唤醒词识别。推荐使用 [FunASR](https://github.com/modelscope/FunASR) 和 [Sherpa-ONNX](https://github.com/k2-fsa/sherpa-onnx)，可以参考 [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) 项目。
+如果你想要使用英文唤醒词（比如：siri），或者更灵敏的唤醒词识别效果，可以参考这个 [Server 端演示](../xiaozhi/README.md)。
+
+如果你需要更多语言的唤醒词，比如日语、韩语或方言等，可以在 server 端运行更大规模、更先进的 AI 模型，来进行唤醒词识别。推荐使用 [FunASR](https://github.com/modelscope/FunASR) 和 [Sherpa-ONNX](https://github.com/k2-fsa/sherpa-onnx)，可以参考 [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) 项目。
 
 ### Q：是否支持说话人（声纹）识别？
 

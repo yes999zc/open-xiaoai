@@ -104,7 +104,7 @@ class SpeakerManager implements ISpeaker {
       silent: boolean;
     }
   ) {
-    const { silent = false } = options ?? {};
+    const { silent = true } = options ?? {};
     const command = awake
       ? silent
         ? `ubus call pnshelper event_notify '{"src":1,"event":0}'`

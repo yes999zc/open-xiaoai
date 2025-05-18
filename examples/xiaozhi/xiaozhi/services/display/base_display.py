@@ -1,30 +1,26 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Callable
-import logging
+from typing import Callable, Optional
+
 
 class BaseDisplay(ABC):
     """显示接口的抽象基类"""
-    
+
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
         self.current_volume = 70  # 默认音量
 
     @abstractmethod
-    def set_callbacks(self,
-                     press_callback: Optional[Callable] = None,
-                     release_callback: Optional[Callable] = None,
-                     status_callback: Optional[Callable] = None,
-                     text_callback: Optional[Callable] = None,
-                     emotion_callback: Optional[Callable] = None,
-                     mode_callback: Optional[Callable] = None,
-                     auto_callback: Optional[Callable] = None,
-                     abort_callback: Optional[Callable] = None):  # 添加打断回调参数
+    def set_callbacks(
+        self,
+        press_callback: Optional[Callable] = None,
+        release_callback: Optional[Callable] = None,
+        status_callback: Optional[Callable] = None,
+        text_callback: Optional[Callable] = None,
+        emotion_callback: Optional[Callable] = None,
+        mode_callback: Optional[Callable] = None,
+        auto_callback: Optional[Callable] = None,
+        abort_callback: Optional[Callable] = None,
+    ):
         """设置回调函数"""
-        pass
-
-    @abstractmethod
-    def update_button_status(self, text: str):
-        """更新按钮状态"""
         pass
 
     @abstractmethod

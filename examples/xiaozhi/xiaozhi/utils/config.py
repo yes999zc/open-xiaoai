@@ -1,5 +1,4 @@
-import json
-import logging
+import re
 import socket
 import threading
 import uuid
@@ -7,9 +6,8 @@ from typing import Any, Optional
 
 import requests
 
-from config import XIAOZHI_CONFIG
-
-logger = logging.getLogger("ConfigManager")
+from config import APP_CONFIG
+from xiaozhi.utils.file import read_file, write_file
 
 
 class ConfigManager:
@@ -26,7 +24,6 @@ class ConfigManager:
 
     def __init__(self):
         """初始化配置管理器"""
-        self.logger = logger
         if hasattr(self, "_initialized"):
             return
         self._initialized = True
@@ -34,9 +31,9 @@ class ConfigManager:
         # 加载配置
         self._config = {
             "CLIENT_ID": None,
-            "DEVICE_ID": None,
+            "DEVICE_ID": APP_CONFIG["xiaozhi"]["DEVICE_ID"],
+            "NETWORK": APP_CONFIG.get("xiaozhi"),
             "MQTT_INFO": None,
-            "NETWORK": XIAOZHI_CONFIG,
         }
 
         self._initialize_client_id()
@@ -78,9 +75,21 @@ class ConfigManager:
                 current = current.setdefault(part, {})
             current[last] = value
             return True
-        except Exception as e:
-            logger.error(f"Error updating config {path}: {e}")
+        except Exception:
             return False
+
+    def update_config_file(self, path: str, value: Any):
+        """
+        更新 config.py 文件中的特定配置项
+        """
+        write_file(
+            "config.py",
+            re.sub(
+                r'"{}"\s*:\s*"[^"]*"'.format(path),
+                f'"{path}": "{value}"',
+                read_file("config.py"),
+            ),
+        )
 
     @classmethod
     def instance(cls):
@@ -111,24 +120,23 @@ class ConfigManager:
         """确保存在客户端ID"""
         if not self._config["CLIENT_ID"]:
             client_id = self.generate_uuid()
-            success = self.update_config("CLIENT_ID", client_id)
-            if success:
-                logger.info(f"Generated new CLIENT_ID: {client_id}")
-            else:
-                logger.error("Failed to save new CLIENT_ID")
+            self.update_config("CLIENT_ID", client_id)
 
     def _initialize_device_id(self):
         """确保存在设备ID"""
+        if self._config["DEVICE_ID"]:
+            # 检查设备 ID 是否符合 MAC 地址格式(如 a6:85:b4:9c:09:66)
+            mac_pattern = re.compile(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$")
+            if not mac_pattern.match(self._config["DEVICE_ID"]):
+                self._config["DEVICE_ID"] = None
+
         if not self._config["DEVICE_ID"]:
             try:
                 device_hash = self.get_mac_address()
-                success = self.update_config("DEVICE_ID", device_hash)
-                if success:
-                    logger.info(f"Generated new DEVICE_ID: {device_hash}")
-                else:
-                    logger.error("Failed to save new DEVICE_ID")
-            except Exception as e:
-                logger.error(f"Error generating DEVICE_ID: {e}")
+                self.update_config("DEVICE_ID", device_hash)
+                self.update_config_file("DEVICE_ID", device_hash)
+            except Exception:
+                pass
 
     def refresh_mqtt_info(self):
         """刷新 MQTT 信息"""
@@ -140,13 +148,10 @@ class ConfigManager:
             mqtt_info = self._get_ota_version()
             if mqtt_info:
                 self.update_config("MQTT_INFO", mqtt_info)
-                self.logger.info("MQTT信息已成功更新")
                 return mqtt_info
             else:
-                self.logger.warning("获取MQTT信息失败，使用已保存的配置")
                 return self.get_config("MQTT_INFO")
-        except Exception as e:
-            self.logger.error(f"初始化MQTT信息失败: {e}")
+        except Exception:
             return self.get_config("MQTT_INFO")
 
     def _get_ota_version(self):
@@ -200,26 +205,16 @@ class ConfigManager:
 
             # 检查HTTP状态码
             if response.status_code != 200:
-                self.logger.error(f"OTA服务器错误: HTTP {response.status_code}")
                 raise ValueError(f"OTA服务器返回错误状态码: {response.status_code}")
 
             # 解析JSON数据
             response_data = response.json()
 
-            self.logger.debug(
-                f"OTA服务器返回数据: {json.dumps(response_data, indent=4, ensure_ascii=False)}"
-            )
             if "mqtt" in response_data:
-                self.logger.info("MQTT服务器信息已更新")
                 return response_data["mqtt"]
             else:
-                self.logger.error("OTA服务器返回的数据无效: MQTT信息缺失")
                 raise ValueError("OTA服务器返回的数据无效，请检查服务器状态或MAC地址！")
-
         except requests.Timeout:
-            self.logger.error("OTA请求超时，请检查网络或服务器状态")
             raise ValueError("OTA请求超时！请稍后重试。")
-
-        except requests.RequestException as e:
-            self.logger.error(f"OTA请求失败: {e}")
+        except requests.RequestException:
             raise ValueError("无法连接到OTA服务器，请检查网络连接！")
