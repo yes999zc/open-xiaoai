@@ -84,6 +84,19 @@ class OnnxWrapper:
         return out
 
 
-VAD_MODEL = OnnxWrapper(
-    path=get_model_file_path("silero_vad.onnx"),
-)
+class _Silero:
+    def __init__(self) -> None:
+        self.model = OnnxWrapper(
+            path=get_model_file_path("silero_vad.onnx"),
+        )
+
+    def vad(self, frames, sample_rate):
+        try:
+            audio_int16 = np.frombuffer(frames, dtype=np.int16)
+            audio_float32 = audio_int16.astype(np.float32) / 32768.0
+            return self.model(audio_float32, sample_rate).item()
+        except Exception:
+            return None
+
+
+Silero = _Silero()

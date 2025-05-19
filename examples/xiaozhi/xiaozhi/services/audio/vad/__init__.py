@@ -1,20 +1,16 @@
 import threading
 import time
 
-import numpy as np
-
 from config import APP_CONFIG
 from xiaozhi.event import EventManager
 from xiaozhi.ref import set_vad
 from xiaozhi.services.audio.stream import MyAudio
-from xiaozhi.services.audio.vad.silero import VAD_MODEL
+from xiaozhi.services.audio.vad.silero import Silero
 from xiaozhi.services.protocols.typing import AudioConfig
 from xiaozhi.utils.base import get_env
 
 
 class _VAD:
-    """基于WebRTC VAD的语音活动检测器，用于检测用户打断"""
-
     def __init__(self):
         set_vad(self)
 
@@ -33,7 +29,6 @@ class _VAD:
         self.speech_count = 0
         self.silence_count = 0
 
-        # 创建独立的PyAudio实例和流，避免与主音频流冲突
         self.audio = None
         self.stream = None
 
@@ -54,15 +49,10 @@ class _VAD:
         if not get_env("CLI"):
             return
 
-        if self.thread and self.thread.is_alive():
-            return
-
-        self.paused = False
-
-        # 初始化PyAudio和流
         self._initialize_audio_stream()
 
         # 启动检测线程
+        self.paused = False
         self.thread = threading.Thread(target=self._detection_loop, daemon=True)
         self.thread.start()
 
@@ -112,17 +102,6 @@ class _VAD:
             self.pause()
             EventManager.on_silence()
 
-    def _detect_speech(self, frames):
-        """检测是否是语音"""
-        try:
-            audio_int16 = np.frombuffer(frames, dtype=np.int16)
-            audio_float32 = audio_int16.astype(np.float32) / 32768.0
-            speech_prob = VAD_MODEL(audio_float32, 16000).item()
-            is_speech = speech_prob >= self.threshold
-            return is_speech
-        except Exception:
-            return False
-
     def _initialize_audio_stream(self):
         """初始化独立的音频流"""
         try:
@@ -171,7 +150,8 @@ class _VAD:
                 continue
 
             # 检测是否是语音
-            is_speech = self._detect_speech(frames)
+            speech_prob = Silero.vad(frames, self.sample_rate) or 0
+            is_speech = speech_prob >= self.threshold
             if is_speech:
                 self._handle_speech_frame(frames)
             else:
