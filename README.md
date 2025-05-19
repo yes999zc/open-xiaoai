@@ -53,7 +53,7 @@
    - 👉 [小爱音箱接入 MiGPT（完美版）](examples/migpt/README.md)
    - 👉 [小爱音箱接入 Gemini Live API](examples/gemini/README.md)
 
-以上皆为抛砖引玉，你也可以亲手编写自己想要的功能（比如：Airplay、DLNA、开启 DTS 音效等），一切由你定义！
+以上皆为抛砖引玉，你也可以亲手编写自己想要的功能，一切由你定义！
 
 ## 相关项目
 
