@@ -5,7 +5,6 @@ import threading
 import numpy as np
 import open_xiaoai_server
 
-from config import APP_CONFIG
 from xiaozhi.event import EventManager
 from xiaozhi.ref import get_speaker, set_xiaoai
 from xiaozhi.services.audio.stream import GlobalStream
@@ -69,12 +68,6 @@ class XiaoAI:
         event_data = event_json.get("data", {})
         event_type = event_json.get("event")
 
-        async def on_wakeup(text, source):
-            before_wakeup = APP_CONFIG["wakeup"]["before_wakeup"]
-            wakeup = await before_wakeup(get_speaker(), text, source)
-            if wakeup:
-                EventManager.on_wakeup()
-
         if not event_json.get("event"):
             return
 
@@ -87,11 +80,11 @@ class XiaoAI:
             ):
                 text = line.get("payload", {}).get("results")[0].get("text")
                 if not text and not line.get("payload", {}).get("is_vad_begin"):
-                    print(f"🔥 唤醒小爱: {line}")
+                    print("🔥 唤醒小爱")
                     EventManager.on_interrupt()
                 elif text and line.get("payload", {}).get("is_final"):
                     print(f"🔥 收到指令: {text}")
-                    await on_wakeup(text, "xiaoai")
+                    await EventManager.wakeup(text, "xiaoai")
         elif event_type == "playing":
             get_speaker().status = event_data.lower()
 

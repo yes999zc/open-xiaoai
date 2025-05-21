@@ -31,12 +31,19 @@ class _KWS:
         )
 
         # 启动 KWS 服务
+        self.paused = False
         self.thread = threading.Thread(target=self._detection_loop, daemon=True)
         self.thread.start()
 
     def get_file_path(self, file_name: str):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         return os.path.join(current_dir, "../../../models", file_name)
+
+    def pause(self):
+        self.paused = True
+
+    def resume(self):
+        self.paused = False
 
     def _detection_loop(self):
         SherpaOnnx.start()
@@ -46,10 +53,15 @@ class _KWS:
             frames = self.stream.read()
 
             # 在说话和监听状态时，暂停 KWS
-            if not frames or get_xiaozhi().device_state in [
-                DeviceState.LISTENING,
-                DeviceState.SPEAKING,
-            ]:
+            if (
+                not frames
+                or self.paused
+                or get_xiaozhi().device_state
+                in [
+                    DeviceState.LISTENING,
+                    DeviceState.SPEAKING,
+                ]
+            ):
                 time.sleep(0.01)
                 continue
 
@@ -60,14 +72,9 @@ class _KWS:
 
     def on_message(self, text: str):
         asyncio.run_coroutine_threadsafe(
-            self._on_message(text), get_xiaoai().async_loop
+            EventManager.wakeup(text, "kws"),
+            get_xiaoai().async_loop,
         )
-
-    async def _on_message(self, text: str):
-        before_wakeup = APP_CONFIG["wakeup"]["before_wakeup"]
-        wakeup = await before_wakeup(get_speaker(), text, "kws")
-        if wakeup:
-            EventManager.on_wakeup()
 
 
 KWS = _KWS()

@@ -1,7 +1,14 @@
 import asyncio
 
 from config import APP_CONFIG
-from xiaozhi.ref import get_audio_codec, get_speaker, get_vad, get_xiaoai, get_xiaozhi
+from xiaozhi.ref import (
+    get_audio_codec,
+    get_kws,
+    get_speaker,
+    get_vad,
+    get_xiaoai,
+    get_xiaozhi,
+)
 from xiaozhi.services.protocols.typing import AbortReason, DeviceState, ListeningMode
 
 
@@ -154,6 +161,14 @@ class __EventManager:
         # 停止说话
         await xiaozhi.protocol.send_stop_listening()
         xiaozhi.set_device_state(DeviceState.IDLE)
+
+    async def wakeup(self, text, source):
+        before_wakeup = APP_CONFIG["wakeup"]["before_wakeup"]
+        get_kws().pause()  # 暂停 KWS 检测
+        wakeup = await before_wakeup(get_speaker(), text, source)
+        get_kws().resume()  # 恢复 KWS 检测
+        if wakeup:
+            self.on_wakeup()
 
 
 EventManager = __EventManager()
