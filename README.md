@@ -26,9 +26,9 @@
 
 ## 你的声音 + 小爱音箱 = 无限可能
 
-👉 [小爱音箱接入小智 AI 演示视频](https://www.bilibili.com/video/BV1NBXWYSEvX)
+👉 [小爱音箱接入小智 AI 演示视频](https://www.bilibili.com/video/BV1TxJhzvEhz)
 
-[![](./docs/images/xiaozhi.jpg)](https://www.bilibili.com/video/BV1NBXWYSEvX)
+[![](./docs/images/xiaozhi.jpg)](https://www.bilibili.com/video/BV1TxJhzvEhz)
 
 👉 [小爱音箱自定义唤醒词演示视频](https://www.bilibili.com/video/BV1YfVUz5EMj)
 
