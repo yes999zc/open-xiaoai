@@ -66,8 +66,11 @@ docker run -it --rm -p 4399:4399 -v $(pwd)/config.py:/app/config.py idootop/open
 # 安装 Python 依赖
 uv sync --locked
 
-# 编译运行
+# 编译运行（GUI 模式，不支持唤醒词唤醒）
 uv run main.py
+
+# 或者设置环境变量 CLI=true，开启 CLI 模式（支持自定义唤醒词）
+CLI=true uv run main.py
 ```
 
 如果你只是想体验一下小智 AI，请使用以下命令启动：
