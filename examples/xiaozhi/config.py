@@ -9,18 +9,11 @@ async def before_wakeup(speaker, text, source):
         - 'kws': 关键字唤醒
         - 'xiaoai': 小爱同学收到用户指令
     """
-    if source == "kws" and text == "你好小智":
+    if source == "kws":
         # 播放唤醒提示语
         await speaker.play(text="你好主人，我是小智，请问有什么吩咐？")
         # 返回 True 唤醒小智 AI
         return True
-
-    if source == "kws" and text == "hi siri":
-        # 播放唤醒提示语
-        await speaker.play(text="I'm Siri, how can I help you?")
-        # 唤醒小爱
-        await speaker.wake_up()
-        return False
 
     if source == "xiaoai" and text == "召唤小智":
         # 打断原来的小爱同学
