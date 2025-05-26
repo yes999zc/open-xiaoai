@@ -306,10 +306,12 @@ class XiaoZhi:
             if text:
                 print(f"🤖 小智：{text}")
 
-                verification_code = re.findall(r"验证码.*\d+", text)
+                verification_code = re.search(r"验证码.*?(\d+)", text) or re.search(
+                    r"控制面板.*?(\d+)", text
+                )
                 if verification_code:
                     self.config.update_config_file(
-                        "VERIFICATION_CODE", verification_code[0]
+                        "VERIFICATION_CODE", verification_code.group(1)
                     )
 
                 self.schedule(lambda: self.set_chat_message("assistant", text))
