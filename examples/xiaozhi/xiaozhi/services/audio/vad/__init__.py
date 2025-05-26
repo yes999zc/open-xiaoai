@@ -33,16 +33,16 @@ class _VAD:
         self.stream = None
 
         # 暂存的语音片段
-        self.temp_frames = []
-        self.speech_buffer = []
+        self.silence_frames = []  # 静音片段
+        self.speech_frames = []  # 语音片段
         self.target = None  # 检测目标 speech/silence
 
     def _reset_state(self):
         """重置状态"""
         self.speech_count = 0
         self.silence_count = 0
-        self.speech_buffer = []
-        self.temp_frames = []
+        self.speech_frames = []
+        self.silence_frames = []
 
     def start(self):
         """启动VAD检测器"""
@@ -78,22 +78,37 @@ class _VAD:
         """处理语音帧"""
         self.speech_count += len(frames)
         self.silence_count = 0
-        self.speech_buffer.extend(frames)
 
-        speech_bytes = bytes(self.speech_buffer)
+        if not self.speech_frames:
+            # 加入静音片段（潜在的语音片段）
+            self.speech_frames.extend(self.silence_frames)
+
+        # 加入语音片段
+        self.speech_frames.extend(frames)
+
+        speech_bytes = bytes(self.speech_frames)
 
         if (
             self.target == "speech"
             and self.speech_count > self.min_speech_duration * self.sample_rate / 1000
         ):
             self.pause()
+            # !FIXME: 需要保证音频流的连续性（在发消息期间）
             EventManager.on_speech(speech_bytes)
 
     def _handle_silence_frame(self, frames):
         """处理静音帧"""
         self.silence_count += len(frames)
         self.speech_count = 0
-        self.speech_buffer = []
+
+        if not self.speech_frames:
+            # 如果之前没有语音片段，则将当前帧加入静音片段
+            self.silence_frames.extend(frames)
+            # 确保静音片段长度不超过 3s
+            self.silence_frames = self.silence_frames[: 3 * self.sample_rate]
+        else:
+            # 如果之前有语音片段，则将当前帧加入语音片段
+            self.speech_frames.extend(frames)
 
         if (
             self.target == "silence"

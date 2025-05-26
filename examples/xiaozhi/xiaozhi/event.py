@@ -27,7 +27,6 @@ class __EventManager:
         self.session_id = 0
         self.current_step = Step.idle
         self.next_step_future = None
-        self.tts_session_id = ""
 
     def update_step(self, step: Step, step_data=None):
         if get_xiaoai().mode == "xiaozhi":
@@ -80,12 +79,9 @@ class __EventManager:
 
     def on_tts_end(self, session_id):
         """TTS结束"""
-        if self.current_step == Step.on_interrupt:
+        if self.current_step in [Step.on_interrupt, Step.on_tts_end]:
             # 当前 session 已经被打断了，不再处理
             return
-        if self.tts_session_id == session_id:
-            return
-        self.tts_session_id = session_id
         self.session_id = self.session_id + 1
         self.update_step(Step.on_tts_end)
         self.start_session()
