@@ -296,10 +296,10 @@ class XiaoZhi:
         """处理TTS消息"""
         state = data.get("state", "")
         if state == "start":
-            EventManager.on_tts_start()
+            EventManager.on_tts_start(data.get("session_id"))
             self.schedule(lambda: self._handle_tts_start())
         elif state == "stop":
-            EventManager.on_tts_end()
+            EventManager.on_tts_end(data.get("session_id"))
             self.schedule(lambda: self._handle_tts_stop())
         elif state == "sentence_start":
             text = data.get("text", "")
