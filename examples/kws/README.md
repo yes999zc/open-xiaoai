@@ -147,3 +147,11 @@ curl -sSfL https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws
 由于小爱音箱 client 端算力和存储空间有限，默认只使用了一个较小的[语音识别模型](https://k2-fsa.github.io/sherpa/onnx/kws/pretrained_models/index.html#sherpa-onnx-kws-pre-trained-models)（5MB 左右），需要占用大约 20 MB 的存储空间。其他型号的小爱音箱存储空间和算力可能不足以运行该模型，请自行测试。
 
 你也可以参考 [open-xiaoai](https://github.com/idootop/open-xiaoai) 里的演示程序，在 server 端运行更大规模、更先进的 AI 模型，来进行唤醒词识别，达到相同目的。推荐使用 [FunASR](https://github.com/modelscope/FunASR) 和 [Sherpa-ONNX](https://github.com/k2-fsa/sherpa-onnx)，可以参考 [xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server) 项目。
+
+### Q：我是小爱音箱 Pro（LX06）为什么启动失败显示 Killed？
+
+目前只在新款小米智能音箱 Pro（OH2P）和旧款带 DTS 功能的小爱音箱 Pro（256 MB 内存）上测试可以正常运行。
+
+有些新版的小爱音箱 Pro（不带 DTS 版本）内存仅为 128 MB，无法提供充足的内存来加载模型文件，故无法在 Client 端运行该 KWS 服务。
+
+建议参考 [xiaozhi](../xiaozhi/README.md) 演示，在 Server 端运行 KWS 服务。
