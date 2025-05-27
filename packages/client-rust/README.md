@@ -48,6 +48,12 @@ reboot
 为了构建能够在小爱音箱上运行的 ARMv7 应用，你还需要安装 `cross` 👉 [传送门](https://github.com/cross-rs/cross)
 
 ```shell
+# 克隆代码
+git clone https://github.com/idootop/open-xiaoai.git
+
+# 进入当前项目根目录
+cd packages/client-rust
+
 # 交叉编译
 cross build --release --target armv7-unknown-linux-gnueabihf
 ```

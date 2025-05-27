@@ -18,6 +18,12 @@
 > 请先确认你已经将小爱音箱刷机成功，并安装运行了 Rust 补丁程序 [👉 教程](../../packages/client-rust/README.md)，否则该项目启动后收不到音频输入，将无法正常工作。
 
 ```bash
+# 克隆代码
+git clone https://github.com/idootop/open-xiaoai.git
+
+# 进入当前项目根目录
+cd examples/gemini
+
 # 安装 Python 依赖
 uv sync --locked
 

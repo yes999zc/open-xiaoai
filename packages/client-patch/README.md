@@ -86,6 +86,12 @@ docker run -it --rm --env-file $(pwd)/.env -v $(pwd)/assets:/app/assets -v $(pwd
 - Node.js 22.x: https://nodejs.org/zh-cn/download
 
 ```bash
+# 克隆代码
+git clone https://github.com/idootop/open-xiaoai.git
+
+# 进入当前项目根目录
+cd packages/client-patch
+
 # 安装依赖
 npm install
 

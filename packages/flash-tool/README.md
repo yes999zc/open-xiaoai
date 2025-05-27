@@ -20,6 +20,12 @@ brew install libusb-compat
 ## 使用方法
 
 ```shell
+# 克隆代码
+git clone https://github.com/idootop/open-xiaoai.git
+
+# 进入当前项目根目录
+cd packages/flash-tool
+
 # 授予可运行权限
 chmod +x ./flash
 
