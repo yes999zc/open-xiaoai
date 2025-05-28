@@ -155,19 +155,22 @@ class WebsocketProtocol(Protocol):
             if not transport or transport != "websocket":
                 return
 
+            # TODO 使用默认的 24k 采样率
+            # xiaozhi-esp32-server 返回的参数是 16k 采样率，但实际用的是 24k 采样率
+            
             # 获取音频参数
-            audio_params = data.get("audio_params")
-            if audio_params:
-                # 获取服务器的采样率
-                sample_rate = audio_params.get("sample_rate")
-                if sample_rate:
-                    self.server_sample_rate = sample_rate
-                frame_duration = audio_params.get("frame_duration")
-                if frame_duration:
-                    self.server_frame_duration = frame_duration
-                self.server_frame_size = int(
-                    self.server_sample_rate * (self.server_frame_duration / 1000)
-                )
+            # audio_params = data.get("audio_params")
+            # if audio_params:
+            #     # 获取服务器的采样率
+            #     sample_rate = audio_params.get("sample_rate")
+            #     if sample_rate:
+            #         self.server_sample_rate = sample_rate
+            #     frame_duration = audio_params.get("frame_duration")
+            #     if frame_duration:
+            #         self.server_frame_duration = frame_duration
+            #     self.server_frame_size = int(
+            #         self.server_sample_rate * (self.server_frame_duration / 1000)
+            #     )
 
             # 设置 hello 接收事件
             self.hello_received.set()
