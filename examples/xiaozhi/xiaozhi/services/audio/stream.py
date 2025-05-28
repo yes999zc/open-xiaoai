@@ -74,7 +74,7 @@ class MyStream:
             self._is_active = False
             if self._is_input:
                 GlobalStream.unregister_reader(self)
-                self.input_bytes = []
+                self.input_bytes.clear()
 
     def write(self, frames: bytes) -> None:
         # 发送输出音频流到扬声器
@@ -96,7 +96,7 @@ class MyStream:
     def read(self, num_frames=None, exception_on_overflow=False) -> bytes:
         if num_frames is None:
             data = bytes(self.input_bytes)
-            self.input_bytes = []
+            self.input_bytes.clear()
             return data
 
         num_frames = num_frames * 2

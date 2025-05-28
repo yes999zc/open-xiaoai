@@ -8,8 +8,10 @@ from xiaozhi.ref import (
     get_vad,
     get_xiaoai,
     get_xiaozhi,
+    set_speech_frames,
 )
 from xiaozhi.services.protocols.typing import AbortReason, DeviceState, ListeningMode
+from xiaozhi.utils.base import get_env
 
 
 class Step:
@@ -29,7 +31,7 @@ class __EventManager:
         self.next_step_future = None
 
     def update_step(self, step: Step, step_data=None):
-        if get_xiaoai().mode == "xiaozhi":
+        if not get_env("CLI"):
             return
 
         self.current_step = step
@@ -39,7 +41,7 @@ class __EventManager:
             )
             self.next_step_future = None
 
-    async def wait_next_step(self, timeout=None) -> Step | None:
+    async def wait_next_step(self, timeout=None):
         current_session = self.session_id
 
         self.next_step_future = get_xiaoai().async_loop.create_future()
@@ -104,7 +106,7 @@ class __EventManager:
         )
 
     async def __start_session(self):
-        if get_xiaoai().mode == "xiaozhi":
+        if not get_env("CLI"):
             return
 
         vad = get_vad()
@@ -119,11 +121,6 @@ class __EventManager:
         # 小爱同学唤醒时，直接打断
         if self.current_step == Step.on_interrupt:
             return
-
-        # 尝试打开音频通道
-        if not xiaozhi.protocol.is_audio_channel_opened():
-            xiaozhi.set_device_state(DeviceState.CONNECTING)
-            await xiaozhi.protocol.open_audio_channel()
 
         # 等待 TTS 余音结束
         if self.current_step in [Step.on_tts_end]:
@@ -148,8 +145,9 @@ class __EventManager:
             return
 
         # 开始说话
+        set_speech_frames(speech_buffer)
+        codec.input_stream.start_stream()  # 开启录音
         await xiaozhi.protocol.send_start_listening(ListeningMode.MANUAL)
-        codec.input_stream.input(speech_buffer)  # 追加音频输入片段
         xiaozhi.set_device_state(DeviceState.LISTENING)
 
         # 等待说话结束

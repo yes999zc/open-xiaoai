@@ -13,7 +13,11 @@ class WebsocketProtocol(Protocol):
         # 获取配置管理器实例
         self.config = ConfigManager.instance()
         self.websocket = None
-        self.server_sample_rate = 16000
+        self.server_sample_rate = 24000
+        self.server_frame_duration = 60
+        self.server_frame_size = int(
+            self.server_sample_rate * (self.server_frame_duration / 1000)
+        )
         self.connected = False
         self.hello_received = None  # 初始化时先设为 None
         self.WEBSOCKET_URL = self.config.get_config("NETWORK.WEBSOCKET_URL")
@@ -100,13 +104,14 @@ class WebsocketProtocol(Protocol):
             if self.on_network_error:
                 self.on_network_error(f"连接错误: {str(e)}")
 
-    async def send_audio(self, data: bytes):
+    async def send_audio(self, frames: list[bytes]):
         """发送音频数据"""
         if not self.is_audio_channel_opened():  # 使用已有的 is_connected 方法
             return
 
         try:
-            await self.websocket.send(data)
+            for frame in frames:
+                await self.websocket.send(frame)
         except Exception as e:
             if self.on_network_error:
                 self.on_network_error(f"发送音频失败: {str(e)}")
@@ -157,6 +162,12 @@ class WebsocketProtocol(Protocol):
                 sample_rate = audio_params.get("sample_rate")
                 if sample_rate:
                     self.server_sample_rate = sample_rate
+                frame_duration = audio_params.get("frame_duration")
+                if frame_duration:
+                    self.server_frame_duration = frame_duration
+                self.server_frame_size = int(
+                    self.server_sample_rate * (self.server_frame_duration / 1000)
+                )
 
             # 设置 hello 接收事件
             self.hello_received.set()

@@ -49,3 +49,11 @@ def set_kws(kws: Any):
 
 def get_kws() -> Any:
     return GLOBAL_STATES.get("kws")
+
+
+def set_speech_frames(speech_frames: Any):
+    GLOBAL_STATES["speech_frames"] = speech_frames
+
+
+def get_speech_frames() -> Any:
+    return GLOBAL_STATES.get("speech_frames")

@@ -79,9 +79,10 @@ class _VAD:
         self.speech_count += len(frames)
         self.silence_count = 0
 
-        if not self.speech_frames:
-            # 加入静音片段（潜在的语音片段）
-            self.speech_frames.extend(self.silence_frames)
+        if self.target == "speech":
+            if not self.speech_frames:
+                # 加入静音片段（潜在的语音片段）
+                self.speech_frames.extend(self.silence_frames)
 
         # 加入语音片段
         self.speech_frames.extend(frames)
@@ -93,7 +94,6 @@ class _VAD:
             and self.speech_count > self.min_speech_duration * self.sample_rate / 1000
         ):
             self.pause()
-            # !FIXME: 需要保证音频流的连续性（在发消息期间）
             EventManager.on_speech(speech_bytes)
 
     def _handle_silence_frame(self, frames):
@@ -101,14 +101,17 @@ class _VAD:
         self.silence_count += len(frames)
         self.speech_count = 0
 
-        if not self.speech_frames:
-            # 如果之前没有语音片段，则将当前帧加入静音片段
-            self.silence_frames.extend(frames)
-            # 确保静音片段长度不超过 3s
-            self.silence_frames = self.silence_frames[: 3 * self.sample_rate]
-        else:
-            # 如果之前有语音片段，则将当前帧加入语音片段
-            self.speech_frames.extend(frames)
+        if self.target == "speech":
+            if not self.speech_frames:
+                # 如果之前没有语音片段，则将当前帧加入静音片段
+                self.silence_frames.extend(frames)
+                # 确保静音片段长度不超过 1s
+                self.silence_frames = self.silence_frames[
+                    -1 * 1 * 2 * self.sample_rate :
+                ]
+            else:
+                # 如果之前有语音片段，则将当前帧加入语音片段
+                self.speech_frames.extend(frames)
 
         if (
             self.target == "silence"

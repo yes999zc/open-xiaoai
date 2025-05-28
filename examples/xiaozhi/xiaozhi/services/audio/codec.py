@@ -1,8 +1,14 @@
 import opuslib_next as opuslib
 
-from xiaozhi.ref import set_audio_codec
+from xiaozhi.ref import (
+    get_speech_frames,
+    get_xiaozhi,
+    set_audio_codec,
+    set_speech_frames,
+)
 from xiaozhi.services.audio.stream import MyAudio
 from xiaozhi.services.protocols.typing import AudioConfig
+from xiaozhi.utils.base import get_env
 
 
 class AudioCodec:
@@ -36,11 +42,11 @@ class AudioCodec:
 
         # 初始化音频输出流
         self.output_stream = self.audio.open(
+            output=True,
             format=AudioConfig.FORMAT,
             channels=AudioConfig.CHANNELS,
-            rate=AudioConfig.SAMPLE_RATE,
-            output=True,
-            frames_per_buffer=AudioConfig.FRAME_SIZE,
+            rate=get_xiaozhi().protocol.server_sample_rate,
+            frames_per_buffer=get_xiaozhi().protocol.server_frame_size,
             output_device_index=MyAudio.get_output_device_index(self.audio),
         )
 
@@ -53,18 +59,36 @@ class AudioCodec:
 
         # 初始化Opus解码器
         self.opus_decoder = opuslib.Decoder(
-            fs=AudioConfig.SAMPLE_RATE, channels=AudioConfig.CHANNELS
+            fs=get_xiaozhi().protocol.server_sample_rate,
+            channels=AudioConfig.CHANNELS,
         )
+        self.temp_frames = bytes([])
 
     def read_audio(self):
         """读取音频输入数据并编码"""
         try:
+            speech_frames = get_speech_frames()
+
+            # 加入语音片段
+            if speech_frames:
+                self.temp_frames = speech_frames
+                set_speech_frames([])
+
+            # 读取音频输入数据
             data = self.input_stream.read(
-                AudioConfig.FRAME_SIZE, exception_on_overflow=False
+                num_frames=None if get_env("CLI") else AudioConfig.FRAME_SIZE,
+                exception_on_overflow=False,
             )
             if not data:
                 return None
-            return self.opus_encoder.encode(data, AudioConfig.FRAME_SIZE)
+
+            self.temp_frames += data
+            if len(self.temp_frames) < AudioConfig.FRAME_SIZE * 2:
+                return None
+
+            opus_frames, remain_frames = self.encode_audio(self.temp_frames)
+            self.temp_frames = remain_frames
+            return opus_frames
         except Exception:
             return None
 
@@ -76,24 +100,29 @@ class AudioCodec:
         except Exception:
             pass
 
-    def decode_audio(self, opus_data, frame_size=AudioConfig.FRAME_SIZE):
+    def decode_audio(self, opus_data):
         """解码音频数据"""
-        return self.opus_decoder.decode(opus_data, frame_size, decode_fec=False)
+        return self.opus_decoder.decode(
+            opus_data,
+            frame_size=get_xiaozhi().protocol.server_frame_size,
+            decode_fec=False,
+        )
 
-    def encode_audio(self, buffer, frame_size=AudioConfig.FRAME_SIZE):
+    def encode_audio(self, buffer: bytes, frame_size=AudioConfig.FRAME_SIZE):
         """编码音频数据"""
+        opus_frames = []
+        remain_frames = bytes([])
         try:
-            opus_frames = []
             for i in range(0, len(buffer), frame_size * 2):
                 chunk = buffer[i : i + frame_size * 2]
                 if len(chunk) < frame_size * 2:
-                    # 如果 buffer 长度不是 FRAME_SIZE 的 2 倍，需要补齐
-                    chunk += b"\x00" * (frame_size * 2 - len(chunk))
+                    remain_frames = chunk
+                    break
                 opus_frame = self.opus_encoder.encode(chunk, frame_size)
                 opus_frames.append(opus_frame)
-            return opus_frames
+            return opus_frames, remain_frames
         except Exception:
-            return None
+            return None, remain_frames
 
     def start_streams(self):
         """启动音频流"""

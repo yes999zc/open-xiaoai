@@ -10,7 +10,6 @@ from xiaozhi.services.audio.kws import KWS
 from xiaozhi.services.audio.vad import VAD
 from xiaozhi.services.protocols.typing import (
     AbortReason,
-    AudioConfig,
     DeviceState,
     EventType,
     ListeningMode,
@@ -88,9 +87,9 @@ class XiaoZhi:
         # 等待事件循环准备就绪
         time.sleep(0.1)
 
-        # 初始化应用程序（移除自动连接）
+        # 初始化应用程序
         asyncio.run_coroutine_threadsafe(XiaoAI.init_xiaoai(), self.loop)
-        asyncio.run_coroutine_threadsafe(self._initialize_without_connect(), self.loop)
+        asyncio.run_coroutine_threadsafe(self._initialize_xiaozhi(), self.loop)
 
         # 启动主循环线程
         main_loop_thread = threading.Thread(target=self._main_loop)
@@ -109,8 +108,8 @@ class XiaoZhi:
         asyncio.set_event_loop(self.loop)
         self.loop.run_forever()
 
-    async def _initialize_without_connect(self):
-        """初始化应用程序组件（不建立连接）"""
+    async def _initialize_xiaozhi(self):
+        """初始化应用程序组件"""
 
         # 初始化音频编解码器
         self._initialize_audio()
@@ -122,8 +121,9 @@ class XiaoZhi:
         self.protocol.on_audio_channel_opened = self._on_audio_channel_opened
         self.protocol.on_audio_channel_closed = self._on_audio_channel_closed
 
-        # 设置设备状态为待命
-        self.set_device_state(DeviceState.IDLE)
+        # 打开音频通道
+        self.device_state = DeviceState.CONNECTING
+        await self.protocol.open_audio_channel()
 
     def _initialize_audio(self):
         """初始化音频设备和编解码器"""
@@ -220,50 +220,6 @@ class XiaoZhi:
                     self.protocol.close_audio_channel(), self.loop
                 )
 
-    def _attempt_reconnect(self):
-        """尝试重新连接服务器"""
-        if self.device_state != DeviceState.CONNECTING:
-            self.set_device_state(DeviceState.CONNECTING)
-
-            # 关闭现有连接
-            if self.protocol:
-                asyncio.run_coroutine_threadsafe(
-                    self.protocol.close_audio_channel(), self.loop
-                )
-
-            # 延迟一秒后尝试重新连接
-            def delayed_reconnect():
-                time.sleep(1)
-                asyncio.run_coroutine_threadsafe(self._reconnect(), self.loop)
-
-            threading.Thread(target=delayed_reconnect, daemon=True).start()
-
-    async def _reconnect(self):
-        """重新连接到服务器"""
-
-        # 设置协议回调
-        self.protocol.on_network_error = self._on_network_error
-        self.protocol.on_incoming_audio = self._on_incoming_audio
-        self.protocol.on_incoming_json = self._on_incoming_json
-        self.protocol.on_audio_channel_opened = self._on_audio_channel_opened
-        self.protocol.on_audio_channel_closed = self._on_audio_channel_closed
-
-        # 连接到服务器
-        retry_count = 0
-        max_retries = 3
-
-        while retry_count < max_retries:
-            if await self.protocol.connect():
-                self.set_device_state(DeviceState.IDLE)
-                return True
-
-            retry_count += 1
-            await asyncio.sleep(2)  # 等待2秒后重试
-
-        self.schedule(lambda: self.alert("连接错误", "无法重新连接到服务器"))
-        self.set_device_state(DeviceState.IDLE)
-        return False
-
     def _on_incoming_audio(self, data):
         """接收音频数据回调"""
         if self.device_state == DeviceState.SPEAKING:
@@ -343,31 +299,8 @@ class XiaoZhi:
 
     async def _on_audio_channel_opened(self):
         """音频通道打开回调"""
-        self.schedule(lambda: self._start_audio_streams())
-
-    def _start_audio_streams(self):
-        """启动音频流"""
-        try:
-            # 确保流已关闭后再重新打开
-            if self.audio_codec.input_stream.is_active():
-                self.audio_codec.input_stream.stop_stream()
-
-            # 重新打开流
-            self.audio_codec.input_stream.start_stream()
-
-            if self.audio_codec.output_stream.is_active():
-                self.audio_codec.output_stream.stop_stream()
-
-            # 重新打开流
-            self.audio_codec.output_stream.start_stream()
-
-            # 设置事件触发器
-            threading.Thread(
-                target=self._audio_input_event_trigger, daemon=True
-            ).start()
-
-        except Exception:
-            pass
+        self.set_device_state(DeviceState.IDLE)
+        threading.Thread(target=self._audio_input_event_trigger, daemon=True).start()
 
     def _audio_input_event_trigger(self):
         """音频输入事件触发器"""
@@ -381,7 +314,7 @@ class XiaoZhi:
             except Exception:
                 pass
 
-            time.sleep(AudioConfig.FRAME_DURATION / 1000)  # 按帧时长触发
+            time.sleep(0.01)
 
     async def _on_audio_channel_closed(self):
         """音频通道关闭回调"""
@@ -494,26 +427,10 @@ class XiaoZhi:
             self.protocol.send_abort_speaking(AbortReason.ABORT),
             self.loop,
         )
-
-        # 尝试打开音频通道
-        if not self.protocol.is_audio_channel_opened():
-            self.set_device_state(DeviceState.CONNECTING)  # 设置设备状态为连接中
-            try:
-                # 等待异步操作完成
-                future = asyncio.run_coroutine_threadsafe(
-                    self.protocol.open_audio_channel(), self.loop
-                )
-                # 等待操作完成并获取结果
-                assert future.result(timeout=10.0)  # 添加超时时间
-            except Exception as e:
-                self.alert("错误", f"打开音频通道失败: {str(e)}")
-                self.set_device_state(DeviceState.IDLE)
-                return
-
         asyncio.run_coroutine_threadsafe(
             self.protocol.send_start_listening(ListeningMode.MANUAL), self.loop
         )
-        self.set_device_state(DeviceState.LISTENING)  # 设置设备状态为监听中
+        self.set_device_state(DeviceState.LISTENING)
 
     def stop_listening(self):
         """停止监听"""
@@ -521,8 +438,8 @@ class XiaoZhi:
 
     def _stop_listening_impl(self):
         """停止监听的实现"""
-        self.set_device_state(DeviceState.IDLE)
         asyncio.run_coroutine_threadsafe(self.protocol.send_stop_listening(), self.loop)
+        self.set_device_state(DeviceState.IDLE)
 
     def abort_speaking(self, reason):
         """中止语音输出"""
