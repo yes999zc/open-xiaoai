@@ -13,6 +13,10 @@ EOF
 
 set -e
 
+echo "🤫 等待网络连接中... (30s)"
+
+sleep 30
+
 MIN_SPACE_MB=32
 DOWNLOAD_BASE_URL="https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws"
 

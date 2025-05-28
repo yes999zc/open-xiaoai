@@ -13,8 +13,9 @@ EOF
 
 set -e
 
-echo "🤫 等待连接网络中..."
-sleep 10
+echo "🤫 等待网络连接中... (30s)"
+
+sleep 30
 
 DOWNLOAD_BASE_URL="https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-client"
 
