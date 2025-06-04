@@ -1,5 +1,7 @@
 #! /bin/sh
 
+exec > /dev/null 2>&1
+
 cat << 'EOF'
 
 ▄▖      ▖▖▘    ▄▖▄▖
@@ -13,9 +15,9 @@ EOF
 
 set -e
 
-echo "🤫 等待网络连接中... (30s)"
+echo "🤫 等待网络连接中..."
 
-sleep 30
+sleep 5
 
 MIN_SPACE_MB=32
 DOWNLOAD_BASE_URL="https://gitee.com/idootop/artifacts/releases/download/open-xiaoai-kws"
