@@ -134,6 +134,8 @@ class XiaoZhi:
         except Exception as e:
             self.alert("错误", f"初始化音频设备失败: {e}")
 
+        threading.Thread(target=self._audio_input_event_trigger, daemon=True).start()
+
     def _initialize_display(self):
         """初始化显示界面"""
         if get_env("CLI"):
@@ -300,20 +302,12 @@ class XiaoZhi:
     async def _on_audio_channel_opened(self):
         """音频通道打开回调"""
         self.set_device_state(DeviceState.IDLE)
-        threading.Thread(target=self._audio_input_event_trigger, daemon=True).start()
 
     def _audio_input_event_trigger(self):
         """音频输入事件触发器"""
         while self.running:
-            try:
-                if self.audio_codec.input_stream.is_active():
-                    self.events[EventType.AUDIO_INPUT_READY_EVENT].set()
-            except OSError as e:
-                if "Stream not open" in str(e):
-                    break
-            except Exception:
-                pass
-
+            if self.audio_codec.input_stream.is_active():
+                self.events[EventType.AUDIO_INPUT_READY_EVENT].set()
             time.sleep(0.01)
 
     async def _on_audio_channel_closed(self):

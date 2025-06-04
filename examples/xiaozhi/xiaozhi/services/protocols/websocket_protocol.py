@@ -3,7 +3,9 @@ import json
 
 import websockets
 
+from xiaozhi.ref import get_xiaozhi
 from xiaozhi.services.protocols.protocol import Protocol
+from xiaozhi.services.protocols.typing import DeviceState
 from xiaozhi.utils.config import ConfigManager
 
 
@@ -27,9 +29,20 @@ class WebsocketProtocol(Protocol):
         self.CLIENT_ID = self.config.get_client_id()
         self.DEVICE_ID = self.config.get_device_id()
 
+    async def _close_websocket(self):
+        if self.websocket:
+            try:
+                await self.websocket.close()
+                self.websocket = None
+                self.connected = False
+            except Exception:
+                pass
+
     async def connect(self) -> bool:
         """连接到WebSocket服务器"""
         try:
+            await self._close_websocket()
+
             # 在连接时创建 Event，确保在正确的事件循环中
             self.hello_received = asyncio.Event()
 
@@ -72,7 +85,6 @@ class WebsocketProtocol(Protocol):
                 if self.on_network_error:
                     self.on_network_error("等待响应超时")
                 return False
-
         except Exception as e:
             if self.on_network_error:
                 self.on_network_error(f"无法连接服务: {str(e)}")
@@ -95,14 +107,10 @@ class WebsocketProtocol(Protocol):
                         pass
                 elif self.on_incoming_audio:
                     self.on_incoming_audio(message)
-        except websockets.ConnectionClosed:
+        except Exception:
             self.connected = False
             if self.on_audio_channel_closed:
                 await self.on_audio_channel_closed()
-        except Exception as e:
-            self.connected = False
-            if self.on_network_error:
-                self.on_network_error(f"连接错误: {str(e)}")
 
     async def send_audio(self, frames: list[bytes]):
         """发送音频数据"""
@@ -112,9 +120,8 @@ class WebsocketProtocol(Protocol):
         try:
             for frame in frames:
                 await self.websocket.send(frame)
-        except Exception as e:
-            if self.on_network_error:
-                self.on_network_error(f"发送音频失败: {str(e)}")
+        except Exception:
+            pass
 
     async def send_text(self, message: str):
         """发送文本消息"""
@@ -122,24 +129,18 @@ class WebsocketProtocol(Protocol):
             try:
                 await self.websocket.send(message)
             except Exception as e:
-                await self.close_audio_channel()
-                if self.on_network_error:
-                    self.on_network_error(f"发送消息失败: {str(e)}")
-
+                raise e
     def is_audio_channel_opened(self) -> bool:
         """检查音频通道是否打开"""
         return self.websocket is not None and self.connected
 
-    async def open_audio_channel(self) -> bool:
-        """建立 WebSocket 连接
+    _is_heartbeat_running = False
 
-        如果尚未连接,则创建新的 WebSocket 连接
-        Returns:
-            bool: 连接是否成功
-        """
-        if not self.connected:
-            return await self.connect()
-        return True
+    async def open_audio_channel(self):
+        if not self._is_heartbeat_running:
+            self._is_heartbeat_running = True
+            asyncio.create_task(self.heartbeat())
+        await self.connect()
 
     async def _handle_server_hello(self, data: dict):
         """处理服务器的 hello 消息
@@ -157,7 +158,7 @@ class WebsocketProtocol(Protocol):
 
             # TODO 使用默认的 24k 采样率
             # xiaozhi-esp32-server 返回的参数是 16k 采样率，但实际用的是 24k 采样率
-            
+
             # 获取音频参数
             # audio_params = data.get("audio_params")
             # if audio_params:
@@ -194,3 +195,15 @@ class WebsocketProtocol(Protocol):
                     await self.on_audio_channel_closed()
             except Exception:
                 pass
+
+    async def heartbeat(self):
+        while True:
+            if self.websocket and get_xiaozhi().device_state == DeviceState.IDLE:
+                try:
+                    await self.send_text(
+                        json.dumps({"session_id": "", "type": "abort"})
+                    )
+                except Exception:
+                    # 发送心跳失败，重新连接
+                    await self.open_audio_channel()
+            await asyncio.sleep(1)
