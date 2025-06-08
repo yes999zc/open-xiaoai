@@ -59,7 +59,7 @@ cross build --release --target armv7-unknown-linux-gnueabihf
 ```
 
 > [!TIP]
-> 如果你是 Apple silicon 芯片，为了能够正常使用 cross 交叉编译镜像，请先在 Docker Desktop - Settings - General - Virtual Machine Options 中打开 Apple Virtual framework 选项，然后开启 `Use Rosetta for x86_64/amd64 emulation on Apple Silicon`
+> 如果你是 Apple Silicon 芯片，为了能够正常使用 cross 交叉编译镜像，请先在 Docker Desktop - Settings - General - Virtual Machine Options 中打开 Apple Virtual framework 选项，然后开启 `Use Rosetta for x86_64/amd64 emulation on Apple Silicon`
 
 编译成功后，将构建好的补丁程序 `client` 复制到小爱音箱上
 
