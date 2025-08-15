@@ -11,11 +11,11 @@
     "build": "sh src/build.sh"
   },
   "dependencies": {
-    "@mi-gpt/miot": "^1.0.0"
+    "@mi-gpt/miot": "^1.2.1"
   },
   "devDependencies": {
-    "@mi-gpt/config": "1.0.0",
-    "@types/node": "^22.13.11",
+    "@mi-gpt/config": "1.1.0",
+    "@types/node": "^24.2.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }
