@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 exec > /dev/null 2>&1
 

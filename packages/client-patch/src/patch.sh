@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -28,7 +28,7 @@ apply_patches() {
                     # 清理临时文件
                     rm "$temp_patch"
                 elif [[ "$file" == *.sh ]]; then
-                    sh "$file"
+                    bash "$file"
                 fi
             fi
         done
