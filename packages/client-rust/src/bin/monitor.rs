@@ -53,14 +53,15 @@ async fn main() {
         on_started().await;
     }
 
-    KwsMonitor::start(|event| async move {
-        match event {
-            KwsMonitorEvent::Started => on_started().await,
-            KwsMonitorEvent::Keyword(keyword) => on_keyword(keyword).await,
-        }
-        Ok(())
-    })
-    .await;
+    KwsMonitor::new()
+        .start(|event| async move {
+            match event {
+                KwsMonitorEvent::Started => on_started().await,
+                KwsMonitorEvent::Keyword(keyword) => on_keyword(keyword).await,
+            }
+            Ok(())
+        })
+        .await;
 
     loop {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
