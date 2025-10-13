@@ -147,12 +147,9 @@ async fn on_event(event: Event) -> Result<(), AppError> {
 
 async fn on_stream(stream: Stream) -> Result<(), AppError> {
     let Stream { tag, bytes, .. } = stream;
-    match tag.as_str() {
-        "play" => {
-            // 播放接收到的音频流
-            let _ = AudioPlayer::instance().play(bytes).await;
-        }
-        _ => {}
+    if tag.as_str() == "play" {
+        // 播放接收到的音频流
+        let _ = AudioPlayer::instance().play(bytes).await;
     }
     Ok(())
 }

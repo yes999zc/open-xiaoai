@@ -29,7 +29,7 @@ async fn on_keyword(_keyword: String) {
             .split("\n")
             .filter(|line| !line.trim().is_empty())
             .collect::<Vec<&str>>();
-        if replies.len() > 0 {
+        if !replies.is_empty() {
             wakeup_sounds.clear();
             wakeup_sounds.extend(replies.iter().map(|s| s.to_string()));
         }
