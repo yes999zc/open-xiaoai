@@ -21,6 +21,8 @@ while ! ping -c 1 baidu.com > /dev/null 2>&1; do
     sleep 1
 done
 
+sleep 3
+
 echo "✅ 网络连接成功"
 
 MIN_SPACE_MB=32
