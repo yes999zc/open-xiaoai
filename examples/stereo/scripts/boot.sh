@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -eu
+exec > /dev/null 2>&1
 
 WORK_DIR="/data/open-xiaoai"
 APP_BINARY="$WORK_DIR/stereo"
@@ -23,6 +23,8 @@ while ! ping -c 1 baidu.com > /dev/null 2>&1; do
     echo "🤫 等待网络连接中..."
     sleep 1
 done
+
+sleep 3
 
 echo "✅ 网络连接成功"
 
@@ -60,7 +62,7 @@ main() {
 
     # 6. 启动程序
     echo "🔥 Stereo 立体声程序启动中..."
-    exec "$APP_BINARY" $ARGS
+    "$APP_BINARY" $ARGS
 }
 
 main "$@"

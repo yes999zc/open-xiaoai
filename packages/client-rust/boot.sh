@@ -13,8 +13,6 @@ v1.0.0  by: https://del.wang
 
 EOF
 
-set -e
-
 # 等待能够正常访问 baidu.com
 while ! ping -c 1 baidu.com > /dev/null 2>&1; do
     echo "🤫 等待网络连接中..."

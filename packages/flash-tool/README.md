@@ -52,6 +52,8 @@ chmod +x ./flash
 
 # 第 4 步：刷写固件（注意替换固件文件的实际路径）
 ./flash system system0 root-patched.squashfs
+
+# PS: 如果提示刷写错误，可以多试几次，不一定是真的无法刷机
 ```
 
 > [!TIP]
