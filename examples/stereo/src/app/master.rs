@@ -26,8 +26,6 @@ struct SlaveSession {
 }
 
 pub async fn run_master(master_role: ChannelRole) -> Result<()> {
-    println!("--- 主节点模式 ({}) ---", master_role.to_string());
-
     // 0. 设置 ALSA 重定向
     println!("🔥 启动中，请稍等...");
     let _alsa_guard = AlsaRedirector::new()?;

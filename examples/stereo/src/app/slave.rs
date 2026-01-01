@@ -9,6 +9,7 @@ use crate::net::protocol::{AudioPacket, ChannelRole, ControlPacket};
 use crate::utils::jitter_buffer::JitterBuffer;
 use crate::utils::sync::{ClockSync, now_us};
 use anyhow::{Result, anyhow};
+use std::process::Command;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -16,8 +17,6 @@ use tokio::sync::{Mutex, mpsc};
 
 /// 运行从节点模式
 pub async fn run_slave(role: ChannelRole) -> Result<()> {
-    println!("--- 从节点模式 ({}) ---", role.to_string());
-
     loop {
         match handle_connection(role.clone()).await {
             Err(e) => {
@@ -134,6 +133,14 @@ async fn handle_connection(role: ChannelRole) -> Result<()> {
 
     // 8. 播放主循环
     println!("✅ 主节点已连接，音频串流中...");
+    let _ = Command::new("sh")
+        .arg("-c")
+        .arg(format!(
+            "/usr/sbin/tts_play.sh \"主节点已连接，{}\" >/dev/null 2>&1",
+            role.to_string()
+        ))
+        .status();
+
     let mut pcm_buf = vec![0i16; config.frame_size];
     let mut last_seq: Option<u32> = None;
     let mut last_packet_time = now_us();

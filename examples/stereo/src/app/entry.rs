@@ -13,14 +13,21 @@ pub async fn run_stereo() -> Result<()> {
         return Ok(());
     }
 
-    let mode = &args[1];
+    let mode = if args[1].to_lowercase() == "master" {
+        "主节点"
+    } else {
+        "从节点"
+    };
+
     let role = if args[2].to_lowercase() == "left" {
         ChannelRole::Left
     } else {
         ChannelRole::Right
     };
 
-    if mode == "master" {
+    println!("🚗 当前为: {} {}", mode, role.to_string());
+
+    if mode == "主节点" {
         run_master(role).await
     } else {
         run_slave(role).await
