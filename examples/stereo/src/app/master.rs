@@ -91,7 +91,8 @@ pub async fn run_master(master_role: ChannelRole) -> Result<()> {
     let mut opus_out = vec![0u8; 1500];
     let mut seq = 0u32;
 
-    let delay_us = 200_000;
+    // 播放延迟: 只需覆盖网络延迟 + 时钟偏移
+    let delay_us = 100_000; // 100ms 基础延迟
     let frame_duration_us =
         (config.frame_size as f64 / config.sample_rate as f64 * 1_000_000.0) as u128;
 
@@ -142,7 +143,8 @@ pub async fn run_master(master_role: ChannelRole) -> Result<()> {
                     stream_start_seq = seq;
                 }
 
-                // 计算该帧应当播放的基准时间（相对于流开始）
+                // 计算该帧应当播放的目标时间
+                // target_ts = 数据包发送时间 + 播放延迟
                 let target_ts = stream_start_ts
                     + ((seq - stream_start_seq) as u128 * frame_duration_us)
                     + delay_us;

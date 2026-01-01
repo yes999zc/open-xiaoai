@@ -6,7 +6,6 @@ use crate::audio::player::AudioPlayer;
 use crate::net::discovery::Discovery;
 use crate::net::network::SlaveNetwork;
 use crate::net::protocol::{AudioPacket, ChannelRole, ControlPacket};
-use crate::utils::jitter_buffer::JitterBuffer;
 use crate::utils::sync::{ClockSync, now_us};
 use anyhow::{Result, anyhow};
 use std::sync::Arc;
@@ -62,7 +61,6 @@ async fn handle_connection(role: ChannelRole) -> Result<()> {
     };
     let player = AudioPlayer::new(&config)?;
     let mut codec = OpusCodec::new(&config)?;
-    let mut jitter = JitterBuffer::new(50_000, 3);
     let clock = Arc::new(Mutex::new(ClockSync::new(100)));
 
     // 用于通知主循环 TCP 已断开的消息通道
@@ -85,7 +83,7 @@ async fn handle_connection(role: ChannelRole) -> Result<()> {
                 let _ = d_tx_ping.send(()).await; // 通知主线程 TCP 失败
                 break;
             }
-            tokio::time::sleep(Duration::from_secs(1)).await;
+            tokio::time::sleep(Duration::from_millis(200)).await;
             seq += 1;
         }
     });
@@ -130,7 +128,7 @@ async fn handle_connection(role: ChannelRole) -> Result<()> {
         }
     });
 
-    // 8. 播放主循环
+    // 8. 播放提示
     println!("✅ 主节点已连接，音频串流中...");
     let role_str = role.to_string();
     tokio::spawn(async move {
@@ -144,9 +142,9 @@ async fn handle_connection(role: ChannelRole) -> Result<()> {
             .await;
     });
 
+    // 9. 播放主循环
     let mut pcm_buf = vec![0i16; config.frame_size];
     let mut last_seq: Option<u32> = None;
-    let mut last_packet_time = now_us();
 
     loop {
         // 检查 TCP 是否已断开
@@ -154,48 +152,53 @@ async fn handle_connection(role: ChannelRole) -> Result<()> {
             return Err(anyhow!("主节点已断开: {}", master_tcp_addr));
         }
 
-        // 填充 Jitter Buffer
-        while let Ok(pkt) = audio_rx.try_recv() {
+        // 接收数据包
+        if let Ok(pkt) = audio_rx.try_recv() {
             let now = now_us();
-            // 如果超过 500ms 没有收到包，认为是新流开始，重置状态
-            if now - last_packet_time > 500_000 {
-                jitter.clear();
-                last_seq = None;
-                codec = OpusCodec::new(&config)?;
-                let _ = player.prepare();
+            let current_server_time = clock.lock().await.to_server_time(now);
+
+            // 检查包是否迟到（目标时间已过）
+            if current_server_time > pkt.timestamp {
+                let late_ms = (current_server_time - pkt.timestamp) / 1000;
+                if late_ms > 50 {
+                    // 迟到超过 50ms，直接丢弃
+                    continue;
+                }
+                // 轻微迟到（<50ms），尝试播放
             }
-            last_packet_time = now;
-            jitter.push(pkt);
-        }
 
-        let now = now_us();
-        let current_server_time = clock.lock().await.to_server_time(now);
+            last_seq = Some(pkt.seq);
 
-        if let Some((seq, data)) = jitter.pop_frame(current_server_time) {
-            if let Some(last) = last_seq {
-                let loss_count = seq.wrapping_sub(last) as i32 - 1;
-                if loss_count > 0 {
-                    // 1. 优先尝试 FEC 恢复最近丢失的那一帧
-                    // Opus 的 FEC 数据存储在当前包(data)中，用于恢复“前一帧”
-                    if let Ok(len) = codec.decode_fec(&data, &mut pcm_buf) {
-                        let _ = player.write(&pcm_buf[..len]);
-                    }
+            // 精确等待到播放时间
+            // 策略: 距离远时 sleep，距离近时忙等
+            loop {
+                let now = now_us();
+                let current_server_time_precise = clock.lock().await.to_server_time(now);
 
-                    // 2. 如果丢包超过 1 帧，剩下的帧只能靠丢包补偿(PLC)
-                    for _ in 0..(loss_count - 1) {
-                        if let Ok(len) = codec.decode_loss(&mut pcm_buf) {
-                            let _ = player.write(&pcm_buf[..len]);
-                        }
-                    }
+                if current_server_time_precise >= pkt.timestamp {
+                    break;
+                }
+
+                let wait_us = (pkt.timestamp - current_server_time_precise) as u64;
+
+                if wait_us > 5000 {
+                    // 等待时间 >5ms: sleep 大部分时间
+                    tokio::time::sleep(Duration::from_micros(wait_us - 3000)).await;
+                } else if wait_us > 1000 {
+                    // 等待时间 1-5ms: yield 让出 CPU
+                    tokio::task::yield_now().await;
+                } else {
+                    // 等待时间 <1ms: 直接 break，让播放时机稍微早一点点
+                    break;
                 }
             }
-            last_seq = Some(seq);
 
-            // 3. 正常解码当前帧
-            let len = codec.decode(&data, &mut pcm_buf)?;
-            player.write(&pcm_buf[..len])?;
+            // 解码并播放
+            if let Ok(len) = codec.decode(&pkt.data, &mut pcm_buf) {
+                let _ = player.write(&pcm_buf[..len]);
+            }
         } else {
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            tokio::time::sleep(Duration::from_micros(100)).await;
         }
     }
 }
