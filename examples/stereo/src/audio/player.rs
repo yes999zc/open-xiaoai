@@ -52,18 +52,19 @@ fn setup_pcm(pcm: &PCM, sample_rate: u32, channels: u16) -> Result<()> {
     hwp.set_rate(sample_rate, alsa::ValueOr::Nearest)?;
     hwp.set_channels(channels as u32)?;
 
-    // // 设置较大的缓冲区以减少由于调度抖动导致的断音
-    // // 48000Hz * 0.2s = 9600 samples
-    // let buffer_size = (sample_rate as f64 * 0.2) as u32;
-    // let period_size = buffer_size / 4;
-    // hwp.set_buffer_size_near(buffer_size as alsa::pcm::Frames)?;
-    // hwp.set_period_size_near(period_size as alsa::pcm::Frames, alsa::ValueOr::Nearest)?;
+    // 设置较大的缓冲区以减少由于调度抖动和设备重初始化导致的断音/卡顿
+    // 使用 100ms 缓冲区，既能防止 underrun，又不会引入过大延迟
+    let buffer_size = (sample_rate as f64 * 0.1) as u32; // 100ms 缓冲
+    let period_size = buffer_size / 4; // 25ms 周期
+    hwp.set_buffer_size_near(buffer_size as alsa::pcm::Frames)?;
+    hwp.set_period_size_near(period_size as alsa::pcm::Frames, alsa::ValueOr::Nearest)?;
 
     pcm.hw_params(&hwp).context("Failed to set HwParams")?;
 
     let swp = pcm.sw_params_current()?;
-    // 设置 start_threshold 为 buffer_size 的一半，确保缓冲区有足够数据再开始播放
-    // swp.set_start_threshold(buffer_size as alsa::pcm::Frames / 2)?;
+    // 设置 start_threshold，当缓冲区有 1 个 period 数据时就开始播放
+    // 这样可以快速启动，同时保持足够的缓冲余量
+    swp.set_start_threshold(period_size as alsa::pcm::Frames)?;
     pcm.sw_params(&swp)?;
     pcm.prepare()?;
     Ok(())

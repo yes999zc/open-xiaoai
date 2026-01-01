@@ -217,6 +217,8 @@ pub async fn run_master(master_role: ChannelRole) -> Result<()> {
                         let wait = target_ts - now;
                         if wait > 1000 {
                             tokio::time::sleep(Duration::from_micros(wait as u64)).await;
+                        } else {
+                            // 小于 1ms，直接播放，让播放时机稍微早一点点
                         }
                     }
                 } else {

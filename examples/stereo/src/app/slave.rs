@@ -170,7 +170,6 @@ async fn handle_connection(role: ChannelRole) -> Result<()> {
             last_seq = Some(pkt.seq);
 
             // 精确等待到播放时间
-            // 策略: 距离远时 sleep，距离近时忙等
             loop {
                 let now = now_us();
                 let current_server_time_precise = clock.lock().await.to_server_time(now);
@@ -181,14 +180,10 @@ async fn handle_connection(role: ChannelRole) -> Result<()> {
 
                 let wait_us = (pkt.timestamp - current_server_time_precise) as u64;
 
-                if wait_us > 5000 {
-                    // 等待时间 >5ms: sleep 大部分时间
-                    tokio::time::sleep(Duration::from_micros(wait_us - 3000)).await;
-                } else if wait_us > 1000 {
-                    // 等待时间 1-5ms: yield 让出 CPU
-                    tokio::task::yield_now().await;
+                if wait_us > 1000 {
+                    tokio::time::sleep(Duration::from_micros(wait_us as u64)).await;
                 } else {
-                    // 等待时间 <1ms: 直接 break，让播放时机稍微早一点点
+                    // 小于 1ms，直接播放，让播放时机稍微早一点点
                     break;
                 }
             }
