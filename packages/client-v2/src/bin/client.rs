@@ -2,10 +2,13 @@ use anyhow::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    #[cfg(target_os = "linux")]
+    #[cfg(feature = "app")]
     {
-        xiao::app::entry::run_xiao().await.unwrap();
+        xiao::app::client::entry::run_client().await?;
     }
-    println!("Only support Linux");
+    #[cfg(not(target_os = "linux"))]
+    {
+        eprintln!("Only support Linux");
+    }
     Ok(())
 }
