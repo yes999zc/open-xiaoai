@@ -35,9 +35,15 @@ impl AudioPlayer {
     }
 
     pub async fn stop(&self) -> Result<(), AppError> {
-        let mut sender_guard = self.sender.lock().await;
-        if let Some(sender) = sender_guard.take() {
-            drop(sender);
+        // kill aplay FIRST: the writer may be parked in write_all holding the
+        // write_thread lock, so taking that lock first made pause wait up to
+        // half a second. Killing the child breaks the pipe and frees it at once.
+        if let Some(mut aplay_thread) = self.aplay_thread.lock().await.take() {
+            let _ = aplay_thread.kill().await;
+        }
+
+        if let Some(sender) = self.sender.lock().await.take() {
+            drop(sender);                       // closes the channel: writer exits
         }
 
         if let Some(task) = self.player_task.lock().await.take() {
@@ -47,10 +53,6 @@ impl AudioPlayer {
         if let Some(mut write_thread) = self.write_thread.lock().await.take() {
             let _ = timeout(Duration::from_millis(100), write_thread.shutdown()).await;
             drop(write_thread);
-        }
-
-        if let Some(mut aplay_thread) = self.aplay_thread.lock().await.take() {
-            let _ = aplay_thread.kill().await;
         }
 
         Ok(())
