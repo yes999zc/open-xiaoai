@@ -64,23 +64,34 @@ impl AudioPlayer {
 
         let config = config.unwrap_or_else(|| (*AUDIO_CONFIG).clone());
 
+        // honor the requested PCM: the default route goes through the vendor's
+        // DTS processor, which level-matches everything we send. Naming a plain
+        // PCM (e.g. plug:dmixer) is the only way out of that chain without a
+        // firmware change. "noop" is the capture alias the config defaults to,
+        // so treat it as "no -D".
+        let mut args: Vec<String> = vec![
+            "--quiet".into(),
+            "-t".into(),
+            "raw".into(),
+            "-f".into(),
+            format!("S{}_LE", config.bits_per_sample),
+            "-r".into(),
+            config.sample_rate.to_string(),
+            "-c".into(),
+            config.channels.to_string(),
+            "--buffer-size".into(),
+            config.buffer_size.to_string(),
+            "--period-size".into(),
+            config.period_size.to_string(),
+        ];
+        if !config.pcm.is_empty() && config.pcm != "noop" {
+            args.push("-D".into());
+            args.push(config.pcm.clone());
+        }
+        args.push("-".into());
+
         let mut aplay_thread = Command::new("aplay")
-            .args([
-                "--quiet",
-                "-t",
-                "raw",
-                "-f",
-                &format!("S{}_LE", config.bits_per_sample),
-                "-r",
-                &config.sample_rate.to_string(),
-                "-c",
-                &config.channels.to_string(),
-                "--buffer-size",
-                &config.buffer_size.to_string(),
-                "--period-size",
-                &config.period_size.to_string(),
-                "-",
-            ])
+            .args(&args)
             .stdin(Stdio::piped())
             .spawn()?;
 
