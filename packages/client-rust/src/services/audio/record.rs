@@ -88,10 +88,12 @@ impl AudioRecorder {
 
             let mut accumulated_data = Vec::with_capacity(target_size * 2);
             let mut buffer = vec![0u8; read_size];
+            let mut starved = 0u32;
 
             loop {
                 match timeout(Duration::from_millis(500), stdout.read(&mut buffer)).await {
                     Ok(Ok(size)) if size > 0 => {
+                        starved = 0;
                         accumulated_data.extend_from_slice(&buffer[..size]);
                         while accumulated_data.len() >= target_size {
                             let data_to_send =
@@ -103,7 +105,24 @@ impl AudioRecorder {
                             }
                         }
                     }
-                    _ => break,
+                    Ok(Ok(_)) => break,      // arecord exited: nothing left to read
+                    Ok(Err(e)) => {
+                        eprintln!("[record] read error: {}", e);
+                        break;
+                    }
+                    Err(_) => {
+                        // A 500 ms gap is a scheduling hiccup, not the end of the
+                        // session. The old code broke out here, so one stall left
+                        // the assistant deaf until it was restarted.
+                        starved += 1;
+                        if starved % 4 == 0 {
+                            eprintln!("[record] no audio for {} s", starved / 2);
+                        }
+                        if starved >= 20 {
+                            eprintln!("[record] arecord stalled 10 s, giving up");
+                            break;
+                        }
+                    }
                 }
             }
 

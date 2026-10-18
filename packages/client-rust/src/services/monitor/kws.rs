@@ -48,9 +48,18 @@ impl KwsMonitor {
 
                 async move {
                     if let FileMonitorEvent::NewLine(content) = event {
-                        let data = content.split('@').collect::<Vec<&str>>();
-                        let timestamp = data[0].parse::<u64>().unwrap();
-                        let keyword = data[1].to_string();
+                        // kws.log is shared with the vendor daemon: a malformed
+                        // line used to panic here (unwrap + data[1]) and, with
+                        // panic="abort", that killed the whole client.
+                        let Some((ts_part, kw_part)) = content.split_once('@') else {
+                            eprintln!("[kws] malformed line, skipped: {}", content);
+                            return Ok(());
+                        };
+                        let Ok(timestamp) = ts_part.trim().parse::<u64>() else {
+                            eprintln!("[kws] no timestamp, skipped: {}", content);
+                            return Ok(());
+                        };
+                        let keyword = kw_part.to_string();
                         let last_timestamp = last_ts_store.load(Ordering::Relaxed);
                         if timestamp != last_timestamp {
                             last_ts_store.store(timestamp, Ordering::Relaxed);

@@ -142,9 +142,8 @@ impl AudioPlayer {
             let t0 = std::time::Instant::now();
             let mut idx: u64 = 0;
             while let Some(bytes) = rx.recv().await {
-                idx += 1;
-                if idx % 10 == 1 {
-                    eprintln!("[aplay] chunk {} at {} ms", idx, t0.elapsed().as_millis());
+                if idx % 10 == 0 {
+                    eprintln!("[aplay] chunk {} at {} ms", idx + 1, t0.elapsed().as_millis());
                 }
                 let mut wrote = false;
                 {
@@ -173,8 +172,13 @@ impl AudioPlayer {
                     }
                 }
                 if !wrote {
+                    // A chunk that never reached aplay must not be counted:
+                    // the server's position bookkeeping is driven by this
+                    // number, and a skipped index made it drift.
+                    eprintln!("[aplay] chunk dropped (write timeout), not reported");
                     continue;
                 }
+                idx += 1;
                 // Report the chunk only after the write lock is released: the
                 // server paces the stream by these reports, and holding the lock
                 // across a websocket send would stall the next chunk.
