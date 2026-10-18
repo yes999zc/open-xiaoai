@@ -100,8 +100,25 @@ impl AppClient {
 
         self.key_monitor
             .start(|event: KeyEvent| async move {
+                // Read the count before stopping: the server puts its play
+                // position back to this chunk so a resume does not skip a piece.
+                let played = AudioPlayer::instance().consumed().await;
+                if event.code == 114 && event.value == 1 {
+                    // Pause must silence the speaker now, not one socket buffer
+                    // later: a stop_play from the server can only arrive after
+                    // the audio queued ahead of it. Killing aplay locally costs
+                    // one evdev read.
+                    let _ = AudioPlayer::instance().stop().await;
+                }
                 MessageManager::instance()
-                    .send_event("key", Some(json!(event)))
+                    .send_event(
+                        "key",
+                        Some(json!({
+                            "code": event.code,
+                            "value": event.value,
+                            "played": played
+                        })),
+                    )
                     .await
             })
             .await;

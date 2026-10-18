@@ -1,4 +1,6 @@
+use std::os::unix::io::AsRawFd;
 use std::process::Stdio;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 use tokio::io::AsyncWriteExt;
@@ -8,14 +10,25 @@ use tokio::task::JoinHandle;
 use tokio::time::timeout;
 
 use crate::base::AppError;
+use crate::services::connect::message::MessageManager;
 
 use super::config::{AudioConfig, AUDIO_CONFIG};
+
+/// F_SETPIPE_SZ from asm-generic/fcntl.h: it is not exposed by std, and the
+/// default 64 KB pipe is two seconds of audio the server cannot see into.
+const F_SETPIPE_SZ: i32 = 1031;
+const PIPE_BYTES: i32 = 8192;
+
+extern "C" {
+    fn fcntl(fd: i32, cmd: i32, ...) -> i32;
+}
 
 pub struct AudioPlayer {
     aplay_thread: Arc<Mutex<Option<Child>>>,
     write_thread: Arc<Mutex<Option<ChildStdin>>>,
     sender: Arc<Mutex<Option<mpsc::Sender<Vec<u8>>>>>,
     player_task: Arc<Mutex<Option<JoinHandle<()>>>>,
+    consumed: Arc<AtomicU64>,
 }
 
 static INSTANCE: LazyLock<AudioPlayer> = LazyLock::new(AudioPlayer::new);
@@ -27,7 +40,14 @@ impl AudioPlayer {
             write_thread: Arc::new(Mutex::new(None)),
             sender: Arc::new(Mutex::new(None)),
             player_task: Arc::new(Mutex::new(None)),
+            consumed: Arc::new(AtomicU64::new(0)),
         }
+    }
+
+    /// Chunks handed to aplay for the current playback. The server uses this to
+    /// put the play position back where the speaker actually stopped.
+    pub async fn consumed(&self) -> u64 {
+        self.consumed.load(Ordering::Relaxed)
     }
 
     pub fn instance() -> &'static Self {
@@ -98,6 +118,14 @@ impl AudioPlayer {
             .spawn()?;
 
         let stdin = aplay_thread.stdin.take().unwrap();
+        // A 64 KB pipe hides two seconds of audio from the server: it can push
+        // that much before write_all blocks, so a stop_play queued behind it.
+        // 8 KB keeps the same backpressure at 250 ms.
+        let rc = unsafe { fcntl(stdin.as_raw_fd(), F_SETPIPE_SZ, PIPE_BYTES) };
+        if rc < 0 {
+            eprintln!("[aplay] pipe stays at the kernel default size");
+        }
+        self.consumed.store(0, Ordering::Relaxed);   // the server counts from 1
         self.aplay_thread.lock().await.replace(aplay_thread);
         self.write_thread.lock().await.replace(stdin);
 
@@ -107,6 +135,7 @@ impl AudioPlayer {
         let (tx, mut rx) = mpsc::channel::<Vec<u8>>(4);
 
         let write_thread_clone = self.write_thread.clone();
+        let consumed = self.consumed.clone();
         let player_task = tokio::spawn(async move {
             // arrival timeline: one line per second of audio shows whether chunks
             // reach aplay evenly or in bursts
@@ -117,28 +146,42 @@ impl AudioPlayer {
                 if idx % 10 == 1 {
                     eprintln!("[aplay] chunk {} at {} ms", idx, t0.elapsed().as_millis());
                 }
-                let mut write_guard = write_thread_clone.lock().await;
-                if let Some(write_thread) = write_guard.as_mut() {
-                    // silent drops here are invisible from the server: a chunk
-                    // that blocks for 100 ms is thrown away and the sentence
-                    // loses a piece. Log both outcomes so the gap is measurable.
-                    let t0 = std::time::Instant::now();
-                    match timeout(Duration::from_millis(500), write_thread.write_all(&bytes)).await {
-                        Ok(Ok(())) => {
-                            let ms = t0.elapsed().as_millis();
-                            if ms >= 80 {
-                                eprintln!("[aplay] slow write {} ms ({} bytes)", ms, bytes.len());
+                let mut wrote = false;
+                {
+                    let mut write_guard = write_thread_clone.lock().await;
+                    if let Some(write_thread) = write_guard.as_mut() {
+                        // silent drops here are invisible from the server: a chunk
+                        // that blocks for 100 ms is thrown away and the sentence
+                        // loses a piece. Log both outcomes so the gap is measurable.
+                        let t0 = std::time::Instant::now();
+                        match timeout(Duration::from_millis(500), write_thread.write_all(&bytes)).await {
+                            Ok(Ok(())) => {
+                                let ms = t0.elapsed().as_millis();
+                                if ms >= 80 {
+                                    eprintln!("[aplay] slow write {} ms ({} bytes)", ms, bytes.len());
+                                }
+                                wrote = true;
                             }
+                            Ok(Err(e)) => eprintln!("[aplay] write error: {}", e),
+                            Err(_) => eprintln!(
+                                "[aplay] WRITE TIMEOUT dropped {} bytes (aplay blocked 500 ms)",
+                                bytes.len()
+                            ),
                         }
-                        Ok(Err(e)) => eprintln!("[aplay] write error: {}", e),
-                        Err(_) => eprintln!(
-                            "[aplay] WRITE TIMEOUT dropped {} bytes (aplay blocked 500 ms)",
-                            bytes.len()
-                        ),
+                    } else {
+                        break;
                     }
-                } else {
-                    break;
                 }
+                if !wrote {
+                    continue;
+                }
+                // Report the chunk only after the write lock is released: the
+                // server paces the stream by these reports, and holding the lock
+                // across a websocket send would stall the next chunk.
+                consumed.store(idx, Ordering::Relaxed);
+                let _ = MessageManager::instance()
+                    .send_event("consumed", Some(serde_json::json!({ "n": idx })))
+                    .await;
             }
         });
 
