@@ -39,6 +39,14 @@ impl KeyMonitor {
         F: Fn(KeyEvent) -> Fut + Send + Sync + 'static,
         Fut: Future<Output = Result<(), AppError>> + Send + 'static,
     {
+        // init() runs on every websocket reconnect. A second reader would
+        // double every key event and leak the previous fd: tokio's file read
+        // cannot be cancelled, so an aborted task keeps the fd until an event
+        // arrives. One reader per process is enough -- the callback sends via
+        // MessageManager, which always uses the current socket.
+        if matches!(self.task_holder.as_ref(), Some(t) if !t.is_finished()) {
+            return;
+        }
         let Some(path) = find_keypad_device() else {
             eprintln!("no keypad device found, key events disabled");
             return;
@@ -68,7 +76,11 @@ impl KeyMonitor {
                 if type_ != 1 {
                     continue; // EV_KEY only
                 }
-                let _ = on_update(KeyEvent { code, value }).await;
+                if let Err(e) = on_update(KeyEvent { code, value }).await {
+                    // the socket is down (server restart): say so instead of
+                    // dropping the press without a trace
+                    eprintln!("key event send failed: {}", e);
+                }
             }
         });
 

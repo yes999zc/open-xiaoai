@@ -114,7 +114,9 @@ impl AppClient {
         self.instruction_monitor.stop().await;
         self.playing_monitor.stop().await;
         self.kws_monitor.stop().await;
-        self.key_monitor.stop().await;
+        // the key monitor is deliberately NOT stopped here: stopping it on
+        // every disconnect strands its blocking evdev read (an fd plus a
+        // thread per reconnect) and starting a fresh one doubles the events
     }
 }
 
