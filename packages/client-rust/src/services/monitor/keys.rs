@@ -96,6 +96,10 @@ fn parse_event(buf: &[u8]) -> (u16, u16, i32) {
 /// Read /proc/bus/input/devices and return the event node of "adc_keypad".
 fn find_keypad_device() -> Option<PathBuf> {
     let table = std::fs::read_to_string("/proc/bus/input/devices").ok()?;
+    parse_keypad_table(&table)
+}
+
+fn parse_keypad_table(table: &str) -> Option<PathBuf> {
     let mut matched = false;
     for line in table.lines() {
         if line.starts_with("N: Name=") {
@@ -114,4 +118,46 @@ fn find_keypad_device() -> Option<PathBuf> {
         }
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn event32(type_: u16, code: u16, value: i32) -> Vec<u8> {
+        let mut b = Vec::new();
+        b.extend_from_slice(&1i32.to_le_bytes()); // tv_sec
+        b.extend_from_slice(&2i32.to_le_bytes()); // tv_usec
+        b.extend_from_slice(&type_.to_le_bytes());
+        b.extend_from_slice(&code.to_le_bytes());
+        b.extend_from_slice(&value.to_le_bytes());
+        b
+    }
+
+    #[test]
+    fn parses_32bit_event() {
+        let (t, c, v) = parse_event(&event32(1, 164, 1));
+        assert_eq!((t, c, v), (1, 164, 1));
+    }
+
+    #[test]
+    fn parses_64bit_event() {
+        let mut b = vec![0u8; 8]; // 64-bit timeval padding
+        b.extend_from_slice(&event32(1, 115, 0));
+        let (t, c, v) = parse_event(&b);
+        assert_eq!((t, c, v), (1, 115, 0));
+    }
+
+    #[test]
+    fn finds_keypad_node() {
+        let table = "I: Bus=0010\nN: Name=\"adc_keypad\"\nH: Handlers=kbd event0\n\n\
+                     I: Bus=0019\nN: Name=\"Xiaomi mico auxiliary port\"\nH: Handlers=event1\n";
+        assert_eq!(parse_keypad_table(table), Some(PathBuf::from("/dev/input/event0")));
+    }
+
+    #[test]
+    fn ignores_other_devices() {
+        let table = "N: Name=\"Xiaomi mico auxiliary port\"\nH: Handlers=event1\n";
+        assert_eq!(parse_keypad_table(table), None);
+    }
 }
