@@ -54,6 +54,15 @@ impl PlayingMonitor {
         F: Fn(PlayingMonitorEvent) -> Fut + Send + Sync + 'static,
         Fut: Future<Output = Result<(), AppError>> + Send + 'static,
     {
+        // Polling spawns a shell + mphelper each round. At 10 ms that is 100
+        // processes per second on a 4-core A53, which steals time from the
+        // audio path. Playback state does not need sub-second resolution.
+        let poll_ms = std::env::var("OPEN_XIAOAI_PLAYING_POLL_MS")
+            .ok()
+            .and_then(|v| v.parse::<u64>().ok())
+            .unwrap_or(300)
+            .max(100);
+
         let mut last_status = PlayingMonitorEvent::Idle;
         loop {
             let res = run_shell("mphelper mute_stat").await?;
@@ -70,7 +79,7 @@ impl PlayingMonitor {
                 let _ = on_update(status).await;
             }
 
-            sleep(Duration::from_millis(10)).await;
+            sleep(Duration::from_millis(poll_ms)).await;
         }
     }
 }

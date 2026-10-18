@@ -1,4 +1,5 @@
 use open_xiaoai::services::audio::config::AudioConfig;
+use open_xiaoai::services::monitor::keys::{KeyMonitor, KeyEvent};
 use open_xiaoai::services::monitor::kws::KwsMonitor;
 use serde_json::json;
 use std::time::Duration;
@@ -20,6 +21,7 @@ struct AppClient {
     kws_monitor: KwsMonitor,
     instruction_monitor: InstructionMonitor,
     playing_monitor: PlayingMonitor,
+    key_monitor: KeyMonitor,
 }
 
 impl AppClient {
@@ -28,6 +30,7 @@ impl AppClient {
             kws_monitor: KwsMonitor::new(),
             instruction_monitor: InstructionMonitor::new(),
             playing_monitor: PlayingMonitor::new(),
+            key_monitor: KeyMonitor::new(),
         }
     }
 
@@ -94,6 +97,14 @@ impl AppClient {
                     .await
             })
             .await;
+
+        self.key_monitor
+            .start(|event: KeyEvent| async move {
+                MessageManager::instance()
+                    .send_event("key", Some(json!(event)))
+                    .await
+            })
+            .await;
     }
 
     async fn dispose(&mut self) {
@@ -103,6 +114,7 @@ impl AppClient {
         self.instruction_monitor.stop().await;
         self.playing_monitor.stop().await;
         self.kws_monitor.stop().await;
+        self.key_monitor.stop().await;
     }
 }
 
