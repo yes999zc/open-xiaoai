@@ -99,14 +99,41 @@ impl AudioPlayer {
         self.aplay_thread.lock().await.replace(aplay_thread);
         self.write_thread.lock().await.replace(stdin);
 
-        let (tx, mut rx) = mpsc::channel::<Vec<u8>>(50);
+        // 4 chunks = 400 ms of cushion. A deep queue lets the server run seconds
+        // ahead of the speaker, which is what starved aplay: it consumed at
+        // 1.0x while the timer-fed stream arrived at 1.04x.
+        let (tx, mut rx) = mpsc::channel::<Vec<u8>>(4);
 
         let write_thread_clone = self.write_thread.clone();
         let player_task = tokio::spawn(async move {
+            // arrival timeline: one line per second of audio shows whether chunks
+            // reach aplay evenly or in bursts
+            let t0 = std::time::Instant::now();
+            let mut idx: u64 = 0;
             while let Some(bytes) = rx.recv().await {
+                idx += 1;
+                if idx % 10 == 1 {
+                    eprintln!("[aplay] chunk {} at {} ms", idx, t0.elapsed().as_millis());
+                }
                 let mut write_guard = write_thread_clone.lock().await;
                 if let Some(write_thread) = write_guard.as_mut() {
-                    let _ = timeout(Duration::from_millis(100), write_thread.write_all(&bytes)).await;
+                    // silent drops here are invisible from the server: a chunk
+                    // that blocks for 100 ms is thrown away and the sentence
+                    // loses a piece. Log both outcomes so the gap is measurable.
+                    let t0 = std::time::Instant::now();
+                    match timeout(Duration::from_millis(500), write_thread.write_all(&bytes)).await {
+                        Ok(Ok(())) => {
+                            let ms = t0.elapsed().as_millis();
+                            if ms >= 80 {
+                                eprintln!("[aplay] slow write {} ms ({} bytes)", ms, bytes.len());
+                            }
+                        }
+                        Ok(Err(e)) => eprintln!("[aplay] write error: {}", e),
+                        Err(_) => eprintln!(
+                            "[aplay] WRITE TIMEOUT dropped {} bytes (aplay blocked 500 ms)",
+                            bytes.len()
+                        ),
+                    }
                 } else {
                     break;
                 }
@@ -122,7 +149,15 @@ impl AudioPlayer {
     pub async fn play(&self, bytes: Vec<u8>) -> Result<(), AppError> {
         let sender_guard = self.sender.lock().await;
         if let Some(sender) = sender_guard.as_ref() {
+            // the channel holds 50 chunks; if it is full the websocket reader is
+            // blocked, which shows up on the server as a slow send
+            let t0 = std::time::Instant::now();
+            let n = bytes.len();
             sender.send(bytes).await?;
+            let ms = t0.elapsed().as_millis();
+            if ms >= 80 {
+                eprintln!("[play] queue full, enqueue blocked {} ms ({} bytes)", ms, n);
+            }
         }
 
         Ok(())
