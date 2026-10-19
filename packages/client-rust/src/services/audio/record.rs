@@ -153,14 +153,33 @@ fn transform_stream_chunk(
     if requested.bits_per_sample != 16 || capture.bits_per_sample != A113_CAPTURE_BITS_PER_SAMPLE {
         return chunk;
     }
-    convert_a113_s32_to_s16(&chunk)
+    convert_a113_s32_to_s16(&chunk, capture.channels as usize)
 }
 
-fn convert_a113_s32_to_s16(chunk: &[u8]) -> Vec<u8> {
+/// Number of PDM microphones on the 8-channel array; everything above is reference.
+const A113_MIC_CHANNELS: usize = 6;
+
+/// Per-channel scale for the S32_LE capture.
+///
+/// The two halves of the stream do not share a full scale:
+///   ch0-5  PDM microphones, 24-bit data            -> full scale 2^23, shift 8
+///   ch6-7  playback reference, 16-bit data << 12   -> full scale 2^28, shift 13
+/// A single uniform shift (>>8) clipped 52% of reference samples at mysoftvol 110
+/// and 78% at 170, which cost 7-19 dB of ERLE (see xiaoai-firmware-re).
+fn a113_channel_shift(channels: usize, index: usize) -> u32 {
+    if channels > A113_MIC_CHANNELS && index % channels >= A113_MIC_CHANNELS {
+        13
+    } else {
+        8
+    }
+}
+
+fn convert_a113_s32_to_s16(chunk: &[u8], channels: usize) -> Vec<u8> {
     if chunk.len() % 4 != 0 {
         return Vec::new();
     }
 
+    let channels = channels.max(1);
     let frame_count = chunk.len() / 4;
     let mut out = vec![0u8; frame_count * 2];
 
@@ -173,12 +192,55 @@ fn convert_a113_s32_to_s16(chunk: &[u8]) -> Vec<u8> {
             chunk[base + 3],
         ]);
         // A113 PDM data lives in lower 24 bits of S32_LE: shift by 8 (not 16).
-        let mapped = (sample >> 8).clamp(i16::MIN as i32, i16::MAX as i32) as i16;
+        let shift = a113_channel_shift(channels, frame);
+        let mapped = (sample >> shift).clamp(i16::MIN as i32, i16::MAX as i32) as i16;
         let out_base = frame * 2;
         out[out_base..out_base + 2].copy_from_slice(&mapped.to_le_bytes());
     }
 
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn samples(v: &[i32], channels: usize) -> Vec<i16> {
+        let mut bytes = Vec::new();
+        for s in v {
+            bytes.extend_from_slice(&s.to_le_bytes());
+        }
+        convert_a113_s32_to_s16(&bytes, channels)
+            .chunks_exact(2)
+            .map(|c| i16::from_le_bytes([c[0], c[1]]))
+            .collect()
+    }
+
+    #[test]
+    fn shifts_microphones_by_eight() {
+        assert_eq!(samples(&[1 << 23, -(1 << 21)], 1), vec![i16::MAX, -(1 << 13)]);
+    }
+
+    #[test]
+    fn shifts_reference_channels_by_thirteen() {
+        // 8 channels: two frames, the reference (ch6, ch7) at 2^28 maps to full scale
+        let frame = [1 << 22, 1 << 22, 1 << 22, 1 << 22, 1 << 22, 1 << 22, 1 << 28, 1 << 28];
+        let mut v = Vec::new();
+        v.extend_from_slice(&frame);
+        v.extend_from_slice(&frame);
+        let out = samples(&v, 8);
+        assert_eq!(&out[..6], &[1 << 14, 1 << 14, 1 << 14, 1 << 14, 1 << 14, 1 << 14]);
+        assert_eq!(&out[6..8], &[i16::MAX, i16::MAX]); // 2^28 >> 13 = 2^15, clamped
+        assert_eq!(&out[14..16], &[i16::MAX, i16::MAX]);
+    }
+
+    #[test]
+    fn reference_is_not_flattened_where_uniform_shift_would_clip() {
+        // 400M would clip under >>8 but fits under >>13
+        let out = samples(&[0, 0, 0, 0, 0, 0, 200_000_000, 0], 8);
+        assert!(out[6] < i16::MAX);
+        assert_eq!(out[6], (200_000_000 >> 13) as i16);
+    }
 }
 
 fn spawn_arecord(config: &AudioConfig) -> Result<Child, AppError> {
