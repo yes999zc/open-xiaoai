@@ -66,12 +66,18 @@ impl PlayingMonitor {
         let mut last_status = PlayingMonitorEvent::Idle;
         loop {
             let res = run_shell("mphelper mute_stat").await?;
-            let status = if res.stdout.contains("1") {
-                PlayingMonitorEvent::Playing
-            } else if res.stdout.contains("2") {
-                PlayingMonitorEvent::Paused
-            } else {
-                PlayingMonitorEvent::Idle
+            // `contains("1")` treated any output carrying a 1 as playing: a
+            // "0" with a stray 1 elsewhere, or a future "10", flipped the state
+            // and the session stopped believing the speaker was silent.
+            let status = match res.stdout.split_whitespace().next().and_then(|t| t.parse::<u8>().ok()) {
+                Some(1) => PlayingMonitorEvent::Playing,
+                Some(2) => PlayingMonitorEvent::Paused,
+                Some(0) => PlayingMonitorEvent::Idle,
+                other => {
+                    // unknown code: say so once instead of guessing a state
+                    println!("unexpected mute_stat output {:?} ({:?})", res.stdout, other);
+                    PlayingMonitorEvent::Idle
+                }
             };
 
             if last_status != status {

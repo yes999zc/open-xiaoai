@@ -1,4 +1,5 @@
-use serde::{Deserialize, Serialize};
+use base64::{engine::general_purpose::STANDARD as B64, Engine as _};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -10,10 +11,31 @@ pub enum AppMessage {
     Stream(Stream),
 }
 
+/// PCM used to travel as a JSON array of integers: 8 ch * 16 kHz meant ~770 KB/s
+/// of text for 128 KB of audio, and the phone-class CPU spent real time parsing
+/// it. The server now sends base64; this accepts both so an old server (or a
+/// rollback) still works.
+fn de_bytes<'de, D>(d: D) -> Result<Vec<u8>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Raw {
+        List(Vec<u8>),
+        Text(String),
+    }
+    match Raw::deserialize(d)? {
+        Raw::List(v) => Ok(v),
+        Raw::Text(t) => B64.decode(t.as_bytes()).map_err(serde::de::Error::custom),
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Stream {
     pub id: String,
     pub tag: String,
+    #[serde(deserialize_with = "de_bytes")]
     pub bytes: Vec<u8>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub data: Option<Value>,

@@ -195,7 +195,11 @@ async fn on_stream(stream: Stream) -> Result<(), AppError> {
     let Stream { tag, bytes, .. } = stream;
     if tag.as_str() == "play" {
         // 播放接收到的音频流
-        let _ = AudioPlayer::instance().play(bytes).await;
+        // A dropped chunk used to vanish without a trace: the channel closed,
+        // play() returned Err, and the only symptom was a clipped sentence.
+        if let Err(e) = AudioPlayer::instance().play(bytes).await {
+            println!("play chunk failed: {:?}", e);
+        }
     }
     Ok(())
 }

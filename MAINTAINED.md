@@ -11,7 +11,9 @@
 |---|---|---|
 | `packages/client-rust/src/services/audio/record.rs` | A113 S32→S16 **按通道缩放**：ch0–5 `>>8`、ch6/7 `>>13` | 原来所有通道统一 `>>8`，把播放参考通道削掉 33–78%；参考的满量程是 2^28，麦是 2^23 |
 | `packages/client-rust/src/services/monitor/keys.rs` | 按键转发（175 行新增） | 原厂 4 个键的事件要送到服务端 |
-| `.../monitor/playing.rs` | `mphelper mute_stat` 轮询 300 ms | 知道原厂播放器在放什么，才能避免两个播放器打架 |
+| `.../monitor/playing.rs` | `mphelper mute_stat` 轮询 300 ms，状态按整数精确解析 | `contains("1")` 把任何带 1 的输出都当成"在播放" |
+| `.../connect/data.rs` | 流帧 `bytes` 同时接受 JSON 数组和 base64 | 8ch/16k 的整数数组约 770 KB/s，base64 只有 1/4 体积 |
+| `.../bin/client.rs` | `play` 失败打日志，不再 `let _ =` | 丢帧以前只有"句子被截断"这一个症状 |
 | `.../monitor/kws.rs` `mod.rs` | 小改 | 配合上面 |
 
 ## 编译与部署
@@ -34,6 +36,7 @@ ssh ... 'chmod +x /tmp/client.new && mv /tmp/client.new /data/open-xiaoai/client
 
 ## 当前部署记录
 
-- 分支 `bakey/live` @ `3ea08f0`
-- 二进制 md5：`5360c5b9940a0c0554a8add6d335f7d8`（本地构建 / 设备文件 / 运行进程三处一致，2026-10-20 核对）
+- 分支 `bakey/live` @ `ef94741`
+- 二进制 md5：`d3909ee03062ae3ef7d348c4ac58c106`（本地构建 / 设备文件 / 运行进程三处一致，2026-10-20 12:51 核对）
+- 回滚：设备上 `client.bak-20261020` = 上一版 `5092fd9d…`，`mv` 回去再 `kill $(pidof client)` 即可
 - 设备：LX06 `192.168.5.5`，`/data/open-xiaoai/client-run.sh` 里带服务端 URL + ws token
