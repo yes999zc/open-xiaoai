@@ -153,7 +153,12 @@ fn transform_stream_chunk(
     if requested.bits_per_sample != 16 || capture.bits_per_sample != A113_CAPTURE_BITS_PER_SAMPLE {
         return chunk;
     }
-    convert_a113_s32_to_s16(&chunk, capture.channels as usize)
+    convert_a113_s32_to_s16(
+        &chunk,
+        capture.channels as usize,
+        capture.mic_shift,
+        capture.ref_shift,
+    )
 }
 
 /// Number of PDM microphones on the 8-channel array; everything above is reference.
@@ -161,20 +166,25 @@ const A113_MIC_CHANNELS: usize = 6;
 
 /// Per-channel scale for the S32_LE capture.
 ///
-/// The two halves of the stream do not share a full scale:
-///   ch0-5  PDM microphones, 24-bit data            -> full scale 2^23, shift 8
-///   ch6-7  playback reference, 16-bit data << 12   -> full scale 2^28, shift 13
-/// A single uniform shift (>>8) clipped 52% of reference samples at mysoftvol 110
-/// and 78% at 170, which cost 7-19 dB of ERLE (see xiaoai-firmware-re).
-fn a113_channel_shift(channels: usize, index: usize) -> u32 {
+/// The two halves of the stream do not share a full scale, and both of them move
+/// with the box's `mysoftvol`:
+///   ch0-5  PDM microphones      peak 4.4e7 at 70% volume, 6.8e7 at 80%
+///   ch6-7  playback reference   peak 4.9e8 at 70%, 8.6e8 at 80%
+///
+/// Fixed shifts of 8 / 13 were calibrated at 110 (~43%) and clipped **48-56% of
+/// the mic samples** at 70-80%: half the waveform became a square wave, so the
+/// echo canceller fell to 1.6 dB and barge-in stopped working exactly when the
+/// music got loud. 12 / 16 keep the full range in hand (mic to 1.3e8, ref to
+/// 2.1e9) and measured 11 dB on the same recording.
+fn a113_channel_shift(channels: usize, index: usize, mic_shift: u32, ref_shift: u32) -> u32 {
     if channels > A113_MIC_CHANNELS && index % channels >= A113_MIC_CHANNELS {
-        13
+        ref_shift
     } else {
-        8
+        mic_shift
     }
 }
 
-fn convert_a113_s32_to_s16(chunk: &[u8], channels: usize) -> Vec<u8> {
+fn convert_a113_s32_to_s16(chunk: &[u8], channels: usize, mic_shift: u32, ref_shift: u32) -> Vec<u8> {
     if chunk.len() % 4 != 0 {
         return Vec::new();
     }
@@ -191,8 +201,9 @@ fn convert_a113_s32_to_s16(chunk: &[u8], channels: usize) -> Vec<u8> {
             chunk[base + 2],
             chunk[base + 3],
         ]);
-        // A113 PDM data lives in lower 24 bits of S32_LE: shift by 8 (not 16).
-        let shift = a113_channel_shift(channels, frame);
+        // The shift is a headroom decision, not a bit-depth one: the same
+        // channels get louder as `mysoftvol` goes up, so it must not clip at 80%.
+        let shift = a113_channel_shift(channels, frame, mic_shift, ref_shift);
         let mapped = (sample >> shift).clamp(i16::MIN as i32, i16::MAX as i32) as i16;
         let out_base = frame * 2;
         out[out_base..out_base + 2].copy_from_slice(&mapped.to_le_bytes());
@@ -210,36 +221,35 @@ mod tests {
         for s in v {
             bytes.extend_from_slice(&s.to_le_bytes());
         }
-        convert_a113_s32_to_s16(&bytes, channels)
+        convert_a113_s32_to_s16(&bytes, channels, 12, 16)
             .chunks_exact(2)
             .map(|c| i16::from_le_bytes([c[0], c[1]]))
             .collect()
     }
 
     #[test]
-    fn shifts_microphones_by_eight() {
-        assert_eq!(samples(&[1 << 23, -(1 << 21)], 1), vec![i16::MAX, -(1 << 13)]);
+    fn shifts_microphones_with_headroom() {
+        // 2^27 is what a mic channel reaches at ~80% volume; >>8 would clamp it
+        assert_eq!(samples(&[1 << 26, -(1 << 25)], 1), vec![1 << 14, -(1 << 13)]);
     }
 
     #[test]
-    fn shifts_reference_channels_by_thirteen() {
-        // 8 channels: two frames, the reference (ch6, ch7) at 2^28 maps to full scale
-        let frame = [1 << 22, 1 << 22, 1 << 22, 1 << 22, 1 << 22, 1 << 22, 1 << 28, 1 << 28];
+    fn loud_microphone_does_not_clip() {
+        // 6.8e7 (measured peak at mysoftvol 204) must fit after the shift
+        let out = samples(&[68_000_000, -68_000_000], 1);
+        assert!(out[0] < i16::MAX && out[1] > i16::MIN, "{out:?}");
+    }
+
+    #[test]
+    fn reference_channels_keep_their_own_scale() {
+        // 8 channels: two frames, ch6/7 at 2^30 (measured 8.6e8 at 80%)
+        let frame = [1 << 22, 1 << 22, 1 << 22, 1 << 22, 1 << 22, 1 << 22, 1 << 30, 1 << 30];
         let mut v = Vec::new();
         v.extend_from_slice(&frame);
         v.extend_from_slice(&frame);
         let out = samples(&v, 8);
-        assert_eq!(&out[..6], &[1 << 14, 1 << 14, 1 << 14, 1 << 14, 1 << 14, 1 << 14]);
-        assert_eq!(&out[6..8], &[i16::MAX, i16::MAX]); // 2^28 >> 13 = 2^15, clamped
-        assert_eq!(&out[14..16], &[i16::MAX, i16::MAX]);
-    }
-
-    #[test]
-    fn reference_is_not_flattened_where_uniform_shift_would_clip() {
-        // 400M would clip under >>8 but fits under >>13
-        let out = samples(&[0, 0, 0, 0, 0, 0, 200_000_000, 0], 8);
-        assert!(out[6] < i16::MAX);
-        assert_eq!(out[6], (200_000_000 >> 13) as i16);
+        assert_eq!(&out[..6], &[1 << 10, 1 << 10, 1 << 10, 1 << 10, 1 << 10, 1 << 10]); // 2^22 >> 12
+        assert_eq!(&out[6..8], &[1 << 14, 1 << 14]); // 2^30 >> 16
     }
 }
 
